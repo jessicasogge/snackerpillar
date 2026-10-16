@@ -1,0 +1,159 @@
+import { describe, expect, it } from 'vitest';
+import { makeRenderer, popSize, seeded } from '../public/game/draw.js';
+import { newGame } from '../public/game/game.js';
+
+// A stand-in for a canvas's 2D context that records what was called.
+function fakeContext() {
+  const calls = [];
+  const ctx = new Proxy({}, {
+    get(target, name) {
+      if (name in target) return target[name];
+      if (name === 'createRadialGradient') return () => ({ addColorStop() {} });
+      return (...args) => calls.push([name, ...args]);
+    },
+    set(target, name, value) {
+      target[name] = value;
+      return true;
+    },
+  });
+  return { ctx, calls };
+}
+
+function fakeCanvas(width = 600, height = 450) {
+  const { ctx, calls } = fakeContext();
+  return { clientWidth: width, clientHeight: height, width: 0, height: 0, getContext: () => ctx, calls };
+}
+
+function setup(opts = {}) {
+  const canvas = fakeCanvas(opts.width, opts.height);
+  const lawn = fakeCanvas();
+  const renderer = makeRenderer(canvas, {
+    colors: () => ({ light: '#cfc', shade: '#9c9', blade: 'green' }),
+    makeCanvas: () => lawn,
+    reduceMotion: opts.reduceMotion,
+  });
+  return { canvas, lawn, renderer };
+}
+
+describe('resize', () => {
+  it('matches the canvas to its size on screen, sharper on high-density screens', () => {
+    const { canvas, renderer } = setup();
+    const halfH = renderer.resize(2);
+    expect(canvas.width).toBe(1200);
+    expect(canvas.height).toBe(900);
+    expect(halfH).toBeCloseTo(0.75);
+  });
+
+  it("doesn't go past 2x, to keep big screens fast", () => {
+    const { canvas, renderer } = setup();
+    renderer.resize(4);
+    expect(canvas.width).toBe(1200);
+  });
+
+  it('paints the lawn with grass and daisies', () => {
+    const { lawn, renderer } = setup();
+    renderer.resize(1);
+    const names = lawn.calls.map((c) => c[0]);
+    expect(names).toContain('fillRect');
+    expect(names.filter((n) => n === 'quadraticCurveTo').length).toBeGreaterThan(100);
+    expect(names.filter((n) => n === 'ellipse').length).toBe(9 * 6);
+  });
+
+  it('copes with a canvas that is not on screen yet', () => {
+    const { lawn, renderer } = setup({ width: 0, height: 0 });
+    expect(renderer.resize(1)).toBe(0.75);
+    expect(lawn.calls).toEqual([]);
+  });
+});
+
+describe('draw', () => {
+  function drawn(state, opts) {
+    const { canvas, renderer } = setup(opts);
+    renderer.resize(1);
+    canvas.calls.length = 0;
+    renderer.draw(state);
+    return canvas;
+  }
+
+  const state = newGame({ halfH: 0.75, rand: seeded(9) });
+  state.time = 2;
+  state.body = [{ hue: 120, born: 0 }, { hue: 280, born: 1.9 }];
+  state.obstacles = [
+    { x: 0.6, y: 0.5, r: 0.07, kind: 'rock', lumps: Array(9).fill(1), turn: 0 },
+    { x: -0.6, y: 0.5, r: 0.07, kind: 'mushroom' },
+  ];
+  state.snacks[0].eatenAt = 1.95;
+
+  it('draws the lawn first, then everything else on top', () => {
+    const canvas = drawn(state);
+    expect(canvas.calls[1][0]).toBe('drawImage');
+  });
+
+  it('colors each body circle like the dot he ate', () => {
+    const { canvas, renderer } = setup();
+    renderer.resize(1);
+    const fills = [];
+    const ctx = canvas.getContext();
+    const realArc = ctx.arc;
+    ctx.arc = (...args) => {
+      fills.push(ctx.fillStyle);
+      return realArc(...args);
+    };
+    renderer.draw(state);
+    expect(fills.some((f) => f?.startsWith?.('hsl(120 '))).toBe(true);
+    expect(fills.some((f) => f?.startsWith?.('hsl(280 '))).toBe(true);
+  });
+
+  it('draws dizzy X eyes once the game is over', () => {
+    const lines = (s) => drawn(s).calls.filter((c) => c[0] === 'lineTo').length;
+    expect(lines({ ...state, over: null })).toBe(0);
+    expect(lines({ ...state, over: 'rock' })).toBe(4);
+  });
+
+  it('holds still for people who prefer less motion', () => {
+    const a = drawn({ ...state, time: 2 }, { reduceMotion: true }).calls;
+    const b = drawn({ ...state, time: 2.3, body: state.body.map((c) => ({ ...c, born: -10 })) }, { reduceMotion: true }).calls;
+    const scales = (calls) => calls.filter((c) => c[0] === 'scale').map((c) => c.slice(1));
+    for (const s of scales(b)) expect(s).toEqual([1, 1]);
+    expect(scales(a).length).toBeGreaterThan(0);
+  });
+
+  it('draws nothing before the canvas has a size', () => {
+    const { canvas, renderer } = setup({ width: 0, height: 0 });
+    renderer.resize(1);
+    renderer.draw(state);
+    expect(canvas.calls).toEqual([]);
+  });
+});
+
+describe('popSize', () => {
+  it('starts a new circle at nothing', () => {
+    expect(popSize(0)).toBe(0);
+  });
+
+  it('overshoots a little on the way in', () => {
+    expect(Math.max(...[0.25, 0.3, 0.35, 0.4].map(popSize))).toBeGreaterThan(1);
+  });
+
+  it('settles at full size', () => {
+    expect(popSize(0.45)).toBe(1);
+    expect(popSize(10)).toBe(1);
+  });
+});
+
+describe('seeded', () => {
+  it('gives the same numbers for the same seed', () => {
+    const a = seeded(4);
+    const b = seeded(4);
+    expect([a(), a(), a()]).toEqual([b(), b(), b()]);
+  });
+
+  it('stays between 0 and 1', () => {
+    const r = seeded(99);
+    for (let i = 0; i < 1000; i++) {
+      const n = r();
+      expect(n).toBeGreaterThanOrEqual(0);
+      expect(n).toBeLessThan(1);
+    }
+  });
+});

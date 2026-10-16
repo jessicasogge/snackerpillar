@@ -1,0 +1,63 @@
+import { CELL_R, OBSTACLES } from './config.js';
+
+// Keep the head on the field, turning him back when he reaches an edge.
+export function keepInField(head, halfH) {
+  const mx = 1 - CELL_R * 1.2;
+  const my = halfH - CELL_R * 1.2;
+  if (Math.abs(head.x) > mx) {
+    head.x = Math.sign(head.x) * mx;
+    if (Math.cos(head.dir) * Math.sign(head.x) > 0) head.dir = Math.PI - head.dir;
+  }
+  if (Math.abs(head.y) > my) {
+    head.y = Math.sign(head.y) * my;
+    if (Math.sin(head.dir) * Math.sign(head.y) > 0) head.dir = -head.dir;
+  }
+}
+
+// Rocks and mushrooms, kept away from where he starts (the middle, and the
+// line his body trails along below it) and from each other.
+export function placeObstacles(halfH, rand = Math.random, count = OBSTACLES) {
+  const obstacles = [];
+  for (let i = 0; i < count; i++) {
+    for (let tries = 0; tries < 80; tries++) {
+      const r = 0.055 + rand() * 0.04;
+      const x = (rand() * 2 - 1) * (1 - r - 0.05);
+      const y = (rand() * 2 - 1) * (halfH - r - 0.05);
+      const clearOfStart = Math.hypot(x, y) > 0.42 + r && !(Math.abs(x) < 0.15 + r && y > 0);
+      const clearOfOthers = obstacles.every((o) => Math.hypot(x - o.x, y - o.y) > o.r + r + 0.22);
+      if (clearOfStart && clearOfOthers) {
+        const kind = rand() < 0.6 ? 'rock' : 'mushroom';
+        // A rock's lumpy outline: a radius for each of 9 points around it.
+        const lumps = Array.from({ length: 9 }, () => 0.85 + rand() * 0.2);
+        obstacles.push({ x, y, r, kind, lumps, turn: rand() * Math.PI * 2 });
+        break;
+      }
+    }
+  }
+  return obstacles;
+}
+
+// A new dot somewhere clear of the head, the other dots and the obstacles,
+// or null if the field is too crowded to find one.
+export function newSnack({ halfH, head, snacks, obstacles, time, rand = Math.random }) {
+  const mx = 1 - 0.08;
+  const my = halfH - 0.08;
+  for (let tries = 0; tries < 50; tries++) {
+    const x = (rand() * 2 - 1) * mx;
+    const y = (rand() * 2 - 1) * my;
+    const clearOfHead = Math.hypot(x - head.x, y - head.y) > 0.3;
+    const clearOfOthers = snacks.every((s) => Math.hypot(x - s.x, y - s.y) > 0.13);
+    const clearOfObstacles = obstacles.every((o) => Math.hypot(x - o.x, y - o.y) > o.r + 0.07);
+    if (clearOfHead && clearOfOthers && clearOfObstacles) {
+      return {
+        x,
+        y,
+        r: rand() < 0.4 ? 0.016 : 0.022,
+        hue: Math.floor(rand() * 360),
+        born: time,
+        eatenAt: null,
+      };
+    }
+  }
+  return null;
+}
