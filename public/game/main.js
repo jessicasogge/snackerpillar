@@ -1,3 +1,4 @@
+import { GAME_OVER_DELAY_MS, LEVELS, WIN_DELAY_MS } from './config.js';
 import { hasNextLevel, length, newGame, step } from './game.js';
 import { makeRenderer } from './draw.js';
 
@@ -10,14 +11,19 @@ const BUMPED = {
 };
 
 // Wire the game to the page: input, the animation loop, the level and length
-// counter, and the button under the field. Returns a few handles for tests.
+// counter, the Restart level button, and the pop-up at the end of each level.
+// Returns a few handles for tests.
 export function startGame({ doc = document, win = window } = {}) {
   const canvas = doc.getElementById('field');
   const levelEl = doc.getElementById('level');
   const countEl = doc.getElementById('count');
   const unitEl = doc.getElementById('unit');
-  const statusEl = doc.getElementById('status');
-  const button = doc.getElementById('restart');
+  const restartButton = doc.getElementById('restart');
+  const banner = doc.getElementById('banner');
+  const bannerTitle = doc.getElementById('banner-title');
+  const bannerMessage = doc.getElementById('banner-message');
+  const playButton = doc.getElementById('play-again');
+  const startOverButton = doc.getElementById('start-over');
   const reduceMotion = win.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
 
   const colors = () => {
@@ -29,40 +35,55 @@ export function startGame({ doc = document, win = window } = {}) {
   let halfH = renderer.resize(win.devicePixelRatio);
 
   let state;
+  let nextLevel = 1; // where the pop-up's main button goes
+  let bannerTimer = null;
+
+  const keys = new Set();
+  const drag = { x: 0, y: 0 };
+
   function play(level) {
+    win.clearTimeout(bannerTimer);
+    banner.hidden = true;
+    keys.clear();
+    drag.x = drag.y = 0;
     state = newGame({ halfH, level });
-    show();
+    showCount();
+    canvas.focus({ preventScroll: true });
   }
 
-  // What the button does now: go on to the next level once he finishes one,
-  // start again from level 1 after the last, or retry this level.
-  function next() {
-    if (state.won) return hasNextLevel(state) ? state.level + 1 : 1;
-    return state.level;
-  }
-
-  // The level, how long he is out of how long he needs to be, and what
-  // happened once the level is over.
-  function show() {
+  // The level, and how long he is out of how long he needs to be.
+  function showCount() {
     levelEl.textContent = `Level ${state.level}`;
     countEl.textContent = String(length(state));
     unitEl.textContent = `/ ${state.goal} circles`;
-    if (state.won) {
-      statusEl.textContent = hasNextLevel(state)
-        ? `Level ${state.level} done! He grew to ${state.goal} circles.`
-        : `You beat all 3 levels! He grew to ${state.goal} circles.`;
-      button.textContent = hasNextLevel(state) ? 'Next level' : 'Play again';
-    } else if (state.over) {
-      statusEl.textContent = BUMPED[state.over];
-      button.textContent = 'Try again';
+  }
+
+  function showBanner(title, message, button, { startOver = false } = {}) {
+    bannerTitle.textContent = title;
+    bannerMessage.textContent = message;
+    playButton.textContent = button;
+    startOverButton.hidden = !startOver;
+    banner.hidden = false;
+    playButton.focus({ preventScroll: true });
+  }
+
+  function showWin() {
+    if (hasNextLevel(state)) {
+      nextLevel = state.level + 1;
+      showBanner(`Level ${state.level} complete!`, `He grew to ${state.goal} circles long!`, `Play level ${nextLevel}`);
     } else {
-      statusEl.textContent = '';
-      button.textContent = 'Start over';
+      nextLevel = 1;
+      showBanner('You won!', `You beat all ${LEVELS.length} levels with a caterpillar ${state.goal} circles long!`, 'Play again');
     }
   }
 
+  function showGameOver() {
+    nextLevel = state.level;
+    // On level 1, "Start over" would just be trying again.
+    showBanner('Game over', BUMPED[state.over], `Try level ${state.level} again`, { startOver: state.level > 1 });
+  }
+
   // Arrow keys steer.
-  const keys = new Set();
   win.addEventListener('keydown', (e) => {
     const k = KEYS[e.key];
     if (!k) return;
@@ -74,7 +95,6 @@ export function startGame({ doc = document, win = window } = {}) {
 
   // A drag anywhere on the grass moves him like a trackpad.
   let pointer = null;
-  const drag = { x: 0, y: 0 };
   canvas.addEventListener('pointerdown', (e) => {
     pointer = { id: e.pointerId, x: e.clientX, y: e.clientY };
     canvas.setPointerCapture?.(e.pointerId);
@@ -94,12 +114,9 @@ export function startGame({ doc = document, win = window } = {}) {
   canvas.addEventListener('pointerup', endDrag);
   canvas.addEventListener('pointercancel', endDrag);
 
-  button.addEventListener('click', () => {
-    keys.clear();
-    drag.x = drag.y = 0;
-    play(next());
-    canvas.focus({ preventScroll: true });
-  });
+  restartButton.addEventListener('click', () => play(state.level));
+  playButton.addEventListener('click', () => play(nextLevel));
+  startOverButton.addEventListener('click', () => play(1));
 
   if (win.ResizeObserver) {
     new win.ResizeObserver(() => {
@@ -108,13 +125,14 @@ export function startGame({ doc = document, win = window } = {}) {
   }
   win.matchMedia?.('(prefers-color-scheme: dark)').addEventListener?.('change', renderer.paintLawn);
 
-  // One frame: move the game on, update the counter if anything changed, draw.
+  // One frame: move the game on, update the counter, draw, and once the level
+  // ends, bring up the pop-up after a moment.
   function tick(seconds) {
-    const wasOver = state.over;
+    const wasDone = state.over || state.won;
     const eaten = step(state, { dt: Math.max(0, Math.min(0.05, seconds)), keys, drag, halfH });
-    if (eaten.length || state.over !== wasOver) show();
-    // Once the level is over, the button is the next thing to press.
-    if (state.over !== wasOver || (eaten.length && state.won)) button.focus({ preventScroll: true });
+    if (eaten.length) showCount();
+    if (!wasDone && state.won) bannerTimer = win.setTimeout(showWin, WIN_DELAY_MS);
+    if (!wasDone && state.over) bannerTimer = win.setTimeout(showGameOver, GAME_OVER_DELAY_MS);
     renderer.draw(state);
   }
 

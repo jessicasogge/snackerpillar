@@ -6,20 +6,32 @@ A browser game about a very hungry caterpillar made of circles. Every dot he eat
 
 - **Move** with the arrow keys. On a touch screen, drag anywhere on the grass like a trackpad: he moves the way your finger slides, so your finger never hides him.
 - **Eat the colored dots** to grow. Each one adds a circle to the end of his body in its color, and a new dot appears somewhere else a moment later.
-- **Don't bump into rocks, mushrooms or his own body.** Any of those ends the level, and **Try again** starts it over. The edges of the garden are safe: he just turns around.
+- **Don't bump into rocks, mushrooms or his own body.** Any of those ends the level. The edges of the garden are safe: he just turns around.
 - Left alone, he keeps crawling slowly on his own, so keep an eye on him.
 
 ### Levels
 
-Grow him long enough to finish each level, then tap **Next level**. Each one adds another obstacle and a longer goal:
+There are 10 levels. Level 1 has 2 obstacles and you play until he's 10 circles long. Each level after that adds one more obstacle and 5 more circles:
 
 | Level | Obstacles | Grow to |
 |---|---|---|
 | 1 | 2 | 10 circles |
 | 2 | 3 | 15 circles |
 | 3 | 4 | 20 circles |
+| 4 | 5 | 25 circles |
+| 5 | 6 | 30 circles |
+| 6 | 7 | 35 circles |
+| 7 | 8 | 40 circles |
+| 8 | 9 | 45 circles |
+| 9 | 10 | 50 circles |
+| 10 | 11 | 55 circles |
 
-Beat level 3 and **Play again** takes you back to level 1. The levels are set in `LEVELS` in `public/game/config.js`.
+At the end of every level, a pop-up tells you how it went:
+
+- **Level complete:** **Play level 2** (and so on) takes you to the next level. After level 10, **Play again** goes back to level 1.
+- **Game over:** it says what he ran into, and **Try level 3 again** (or whichever level you're on) starts it over. Past level 1 there's also **Start over**, which goes back to level 1.
+
+**Restart level**, under the garden, starts the level you're on over at any time. The levels are set in `LEVELS` in `public/game/config.js`.
 
 ## Running it locally
 
@@ -53,7 +65,7 @@ The server (`src/index.ts`) is a small Express app that serves the `public/` fol
 | `field.js` | Keeping him on the field, and placing obstacles and dots |
 | `collide.js` | Whether he's touching a dot, an obstacle or his own body |
 | `draw.js` | Drawing the lawn, dots, rocks, mushrooms and him on the canvas |
-| `main.js` | Connecting it all to the page: input, the animation loop, the level and length counter, and the button |
+| `main.js` | Connecting it all to the page: input, the animation loop, the level and length counter, and the end-of-level pop-up |
 
 Tests live in `test/` and run with [Vitest](https://vitest.dev/). GitHub Actions runs them on every push and pull request.
 

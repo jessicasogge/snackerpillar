@@ -51,17 +51,31 @@ describe('levels', () => {
     [1, 2, 10],
     [2, 3, 15],
     [3, 4, 20],
+    [4, 5, 25],
+    [5, 6, 30],
+    [6, 7, 35],
+    [7, 8, 40],
+    [8, 9, 45],
+    [9, 10, 50],
+    [10, 11, 55],
   ])('level %i has %i obstacles and is played to %i circles', (level, obstacles, goal) => {
     const state = newGame({ halfH: HALF_H, level, rand: seeded(level) });
     expect(state.obstacles).toHaveLength(obstacles);
     expect(state.goal).toBe(goal);
   });
 
-  it('has three levels, with a next one after the first two', () => {
-    expect(LEVELS).toHaveLength(3);
-    expect(hasNextLevel(newGame({ halfH: HALF_H, level: 1 }))).toBe(true);
-    expect(hasNextLevel(newGame({ halfH: HALF_H, level: 2 }))).toBe(true);
-    expect(hasNextLevel(newGame({ halfH: HALF_H, level: 3 }))).toBe(false);
+  it('has ten levels, with a next one after every level but the last', () => {
+    expect(LEVELS).toHaveLength(10);
+    for (let level = 1; level <= 9; level++) expect(hasNextLevel(newGame({ halfH: HALF_H, level }))).toBe(true);
+    expect(hasNextLevel(newGame({ halfH: HALF_H, level: 10 }))).toBe(false);
+  });
+
+  it('always fits every obstacle, even on the most crowded level, on a wide or a square field', () => {
+    for (const halfH of [0.75, 1]) {
+      for (let seed = 1; seed <= 200; seed++) {
+        expect(newGame({ halfH, level: 10, rand: seeded(seed) }).obstacles).toHaveLength(11);
+      }
+    }
   });
 
   it('finishes the level when he grows to the goal', () => {
@@ -146,7 +160,7 @@ describe('game over', () => {
   });
 
   it('ends when he crawls into his own body', () => {
-    // Level 3, so his 13 circles aren't already long enough to finish it.
+    // Level 3, so his 13 circles aren't already long enough to finish it (20).
     const state = newGame({ halfH: HALF_H, level: 3, rand: seeded(2) });
     state.obstacles = [];
     state.snacks = [];

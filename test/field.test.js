@@ -64,8 +64,21 @@ describe('placeObstacles', () => {
     }
   });
 
-  it('gives up on one it cannot fit rather than looping forever', () => {
+  it('gives up on ones it cannot fit rather than looping forever', () => {
     expect(placeObstacles(0.2, 3, () => 0.5)).toEqual([]);
+  });
+
+  it('squeezes them closer together when the field is crowded, rather than leaving any out', () => {
+    const crowded = placeObstacles(HALF_H, 11, seeded(8));
+    expect(crowded).toHaveLength(11);
+    for (const o of crowded) expect(Math.hypot(o.x, o.y)).toBeGreaterThan(0.42 + o.r);
+  });
+
+  it('keeps as many as it could fit when it cannot fit them all', () => {
+    // A field barely taller than the start area: only a few fit beside him.
+    const placed = placeObstacles(0.2, 30, seeded(5));
+    expect(placed.length).toBeGreaterThan(0);
+    expect(placed.length).toBeLessThan(30);
   });
 });
 

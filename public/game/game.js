@@ -4,7 +4,7 @@ import { keepInField, newSnack, placeObstacles } from './field.js';
 import { steer } from './steer.js';
 import { extendTrail, trimTrail } from './trail.js';
 
-// A fresh game of a level (1 to 3): just his head in the middle, facing up,
+// A fresh game of a level (1 to 10): just his head in the middle, facing up,
 // with that level's obstacles and the dots scattered around him.
 export function newGame({ halfH, level = 1, rand = Math.random }) {
   const { obstacles, goal } = LEVELS[level - 1];

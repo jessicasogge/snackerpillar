@@ -15,8 +15,22 @@ export function keepInField(head, halfH) {
 }
 
 // Rocks and mushrooms, kept away from where he starts (the middle, and the
-// line his body trails along below it) and from each other.
+// line his body trails along below it) and from each other. Later levels
+// crowd the field, so if they don't all fit it starts over, and then leaves
+// a little less room between them, rather than leaving any out.
 export function placeObstacles(halfH, count, rand = Math.random) {
+  let best = [];
+  for (const gap of [0.22, 0.18, 0.14, 0.1]) {
+    for (let attempt = 0; attempt < 15; attempt++) {
+      const placed = tryPlacing(halfH, count, gap, rand);
+      if (placed.length === count) return placed;
+      if (placed.length > best.length) best = placed;
+    }
+  }
+  return best;
+}
+
+function tryPlacing(halfH, count, gap, rand) {
   const obstacles = [];
   for (let i = 0; i < count; i++) {
     for (let tries = 0; tries < 80; tries++) {
@@ -24,7 +38,7 @@ export function placeObstacles(halfH, count, rand = Math.random) {
       const x = (rand() * 2 - 1) * (1 - r - 0.05);
       const y = (rand() * 2 - 1) * (halfH - r - 0.05);
       const clearOfStart = Math.hypot(x, y) > 0.42 + r && !(Math.abs(x) < 0.15 + r && y > 0);
-      const clearOfOthers = obstacles.every((o) => Math.hypot(x - o.x, y - o.y) > o.r + r + 0.22);
+      const clearOfOthers = obstacles.every((o) => Math.hypot(x - o.x, y - o.y) > o.r + r + gap);
       if (clearOfStart && clearOfOthers) {
         const kind = rand() < 0.6 ? 'rock' : 'mushroom';
         // A rock's lumpy outline: a radius for each of 9 points around it.
