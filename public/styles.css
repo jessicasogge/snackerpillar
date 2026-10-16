@@ -81,13 +81,6 @@ h1 {
   line-height: 1;
 }
 
-.tagline {
-  margin: 0;
-  color: var(--muted);
-  max-width: 46ch;
-  text-wrap: balance;
-}
-
 .garden {
   position: relative;
   width: 100%;

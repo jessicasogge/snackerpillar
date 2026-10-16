@@ -90,6 +90,11 @@ describe('the page', () => {
     expect(window.requestAnimationFrame).toHaveBeenCalledTimes(3);
   });
 
+  it('goes straight from the title to the garden, with no tagline', () => {
+    expect(document.querySelector('h1').nextElementSibling.classList.contains('garden')).toBe(true);
+    expect(document.body.textContent).not.toMatch(/very hungry/);
+  });
+
   it('only mentions the arrow keys and dragging in the hint', () => {
     const hint = document.querySelector('.hint').textContent;
     expect(hint).toMatch(/arrow keys/);
