@@ -1,21 +1,25 @@
-import { RESPAWN_SECONDS, SNACKS, SPACING } from './config.js';
+import { LEVELS, RESPAWN_SECONDS, SNACKS, SPACING } from './config.js';
 import { obstacleHit, tailHit, touchesSnack } from './collide.js';
 import { keepInField, newSnack, placeObstacles } from './field.js';
 import { steer } from './steer.js';
 import { extendTrail, trimTrail } from './trail.js';
 
-// A fresh game: just his head in the middle, facing up, with obstacles and
-// dots scattered around him.
-export function newGame({ halfH, rand = Math.random }) {
+// A fresh game of a level (1 to 10): just his head in the middle, facing up,
+// with that level's obstacles and the dots scattered around him.
+export function newGame({ halfH, level = 1, rand = Math.random }) {
+  const { obstacles, goal } = LEVELS[level - 1];
   const state = {
+    level,
+    goal, // how many circles long he has to grow to finish the level
     head: { x: 0, y: 0, dir: -Math.PI / 2 },
     trail: [{ x: 0, y: 0 }],
     body: [], // { hue, born }, from just behind the head to the tail
     snacks: [],
-    obstacles: placeObstacles(halfH, rand),
+    obstacles: placeObstacles(halfH, obstacles, rand),
     respawns: [], // when each eaten dot comes back, in game seconds
     time: 0,
     over: null, // what he ran into, once the game is over
+    won: false, // whether he grew long enough to finish the level
   };
   // A short straight trail below him, so his first circles have somewhere to go.
   for (let i = 1; i <= 12; i++) state.trail.push({ x: 0, y: (i * SPACING) / 6 });
@@ -31,9 +35,13 @@ function addSnack(state, halfH, rand) {
 // The body's length, counting the head.
 export const length = (state) => state.body.length + 1;
 
+// Whether there's a level after this one.
+export const hasNextLevel = (state) => state.level < LEVELS.length;
+
 // Move the game on by `dt` seconds. Returns the hues of any dots he ate.
+// Once he finishes the level or bumps into something, nothing moves.
 export function step(state, { dt, keys, drag, halfH, rand = Math.random }) {
-  if (state.over) return [];
+  if (state.over || state.won) return [];
   state.time += dt;
   const h = state.head;
   const { vx, vy } = steer(h, { keys, drag, time: state.time, dt });
@@ -60,6 +68,11 @@ export function step(state, { dt, keys, drag, halfH, rand = Math.random }) {
     addSnack(state, halfH, rand);
     return false;
   });
+
+  if (length(state) >= state.goal) {
+    state.won = true;
+    return eaten;
+  }
 
   const obstacle = obstacleHit(h, state.obstacles);
   if (obstacle) state.over = obstacle.kind;
