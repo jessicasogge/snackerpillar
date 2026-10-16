@@ -4,10 +4,9 @@ A browser game about a very hungry caterpillar made of circles. Every dot he eat
 
 ## How to play
 
-- **Move** with the arrow keys. On a touch screen, drag anywhere on the grass like a trackpad: he moves the way your finger slides, so your finger never hides him.
+- **Move** with the arrow keys. He only moves while you're steering him, and turns sharply enough to U-turn without running into himself. On a touch screen, drag anywhere on the grass like a trackpad: he moves the way your finger slides, so your finger never hides him.
 - **Eat the colored dots** to grow. Each one adds a circle to the end of his body in its color, and a new dot appears somewhere else a moment later.
-- **Don't bump into rocks, mushrooms or his own body.** Any of those ends the level. The edges of the garden are safe: he just turns around.
-- Left alone, he keeps crawling slowly on his own, so keep an eye on him.
+- **Don't bump into rocks, mushrooms or his own body.** Any of those ends the level. The edges of the garden are safe: he just stops there, and you can slide him along them.
 
 ### Levels
 

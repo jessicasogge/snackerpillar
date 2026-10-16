@@ -18,7 +18,8 @@ export const WIN_DELAY_MS = 450;
 export const SAFE_NECK = 3; // the first few circles behind the head can't be bumped into
 export const SPEED = {
   steer: 0.55, // with an arrow key held
-  wander: 0.12, // left alone
   drag: 1.6, // the fastest a finger can pull him
-  turn: 7, // radians per second
+  // Radians per second. At full speed that's a turn about one circle wide,
+  // so he can U-turn without running into himself.
+  turn: 12,
 };

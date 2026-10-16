@@ -44,7 +44,7 @@ export function step(state, { dt, keys, drag, halfH, rand = Math.random }) {
   if (state.over || state.won) return [];
   state.time += dt;
   const h = state.head;
-  const { vx, vy } = steer(h, { keys, drag, time: state.time, dt });
+  const { vx, vy } = steer(h, { keys, drag, dt });
   h.x += vx;
   h.y += vy;
   keepInField(h, halfH);

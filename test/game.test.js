@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { LEVELS, RESPAWN_SECONDS, SNACKS } from '../public/game/config.js';
+import { CELL_R, LEVELS, RESPAWN_SECONDS, SNACKS } from '../public/game/config.js';
 import { seeded } from '../public/game/draw.js';
 import { hasNextLevel, length, newGame, step } from '../public/game/game.js';
 
@@ -113,6 +113,32 @@ describe('levels', () => {
   });
 });
 
+describe('moving', () => {
+  it("stays put when you aren't steering him", () => {
+    const state = newGame({ halfH: HALF_H, rand: seeded(4) });
+    const before = { ...state.head };
+    for (let i = 0; i < 100; i++) step(state, { ...idle(), dt: 0.05 });
+    expect(state.head).toEqual(before);
+    expect(state.over).toBeNull();
+  });
+
+  it('crawls up when you hold the up arrow', () => {
+    const state = newGame({ halfH: HALF_H, rand: seeded(4) });
+    state.obstacles = [];
+    step(state, { ...idle(), keys: new Set(['up']), dt: 0.05 });
+    expect(state.head.y).toBeLessThan(0);
+  });
+
+  it('stops at the edge of the garden instead of turning around', () => {
+    const state = newGame({ halfH: HALF_H, rand: seeded(4) });
+    state.obstacles = [];
+    state.snacks = [];
+    for (let i = 0; i < 100; i++) step(state, { ...idle(), keys: new Set(['up']), dt: 0.05 });
+    expect(state.head.y).toBeCloseTo(-(HALF_H - CELL_R * 1.2));
+    expect(state.head.dir).toBeCloseTo(-Math.PI / 2);
+  });
+});
+
 describe('eating', () => {
   it('adds a circle in the color of the dot he ate', () => {
     const state = gameWithSnackAhead(200);
@@ -147,7 +173,7 @@ describe('game over', () => {
     const state = gameWithSnackAhead();
     state.snacks = [];
     state.obstacles = [{ x: 0, y: -0.1, r: 0.07, kind: 'rock' }];
-    step(state, { ...idle(), dt: 0.05 });
+    step(state, { ...idle(), keys: new Set(['up']), dt: 0.05 });
     expect(state.over).toBe('rock');
   });
 
@@ -155,7 +181,7 @@ describe('game over', () => {
     const state = gameWithSnackAhead();
     state.snacks = [];
     state.obstacles = [{ x: 0, y: -0.1, r: 0.07, kind: 'mushroom' }];
-    step(state, { ...idle(), dt: 0.05 });
+    step(state, { ...idle(), keys: new Set(['up']), dt: 0.05 });
     expect(state.over).toBe('mushroom');
   });
 

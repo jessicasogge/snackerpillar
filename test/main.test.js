@@ -58,6 +58,8 @@ function win(game) {
 function bump(game, kind = 'rock') {
   game.state.snacks = [];
   game.state.obstacles = [{ x: game.state.head.x, y: game.state.head.y - 0.1, r: 0.07, kind, lumps: [1, 1, 1], turn: 0 }];
+  game.state.head.dir = -Math.PI / 2;
+  game.keys.add('up');
   game.tick(0.05);
   vi.advanceTimersByTime(GAME_OVER_DELAY_MS);
 }
@@ -166,6 +168,7 @@ describe('game over', () => {
     const game = startGame();
     game.state.snacks = [];
     game.state.obstacles = [{ x: 0, y: -0.1, r: 0.07, kind: 'mushroom' }];
+    game.keys.add('up');
     game.tick(0.05);
     expect(banner().hidden).toBe(true); // his eyes go dizzy first
     vi.advanceTimersByTime(GAME_OVER_DELAY_MS);
@@ -239,6 +242,7 @@ describe('Restart level', () => {
     const game = startGame();
     game.state.snacks = [];
     game.state.obstacles = [{ x: 0, y: -0.1, r: 0.07, kind: 'rock', lumps: [1, 1, 1], turn: 0 }];
+    game.keys.add('up');
     game.tick(0.05);
     click('restart');
     vi.advanceTimersByTime(GAME_OVER_DELAY_MS);
