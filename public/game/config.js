@@ -6,10 +6,10 @@ export const SNACKS = 14; // dots on the grass at a time
 export const RESPAWN_SECONDS = 2.5; // how long an eaten dot takes to come back
 export const HEAD_HUE = 34; // sunny orange
 // Each level: how many rocks and mushrooms are on the grass, and how many
-// circles long he has to grow to finish it. Level 1 has 2 obstacles and is
-// played to 10; each level after adds one more obstacle and 5 more circles,
-// up to 11 obstacles and 55 circles on level 10.
-export const LEVELS = Array.from({ length: 10 }, (_, i) => ({ obstacles: 2 + i, goal: 10 + 5 * i }));
+// circles long he has to grow to finish it. Level 1 has 3 obstacles and is
+// played to 15; each level after adds one more obstacle and 5 more circles,
+// up to 12 obstacles and 60 circles on level 10.
+export const LEVELS = Array.from({ length: 10 }, (_, i) => ({ obstacles: 3 + i, goal: 15 + 5 * i }));
 
 // How long the pop-up waits after a bump, so you can see what happened.
 export const GAME_OVER_DELAY_MS = 600;

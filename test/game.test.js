@@ -37,7 +37,7 @@ describe('a new game', () => {
 
   it('scatters dots and obstacles', () => {
     expect(state.snacks).toHaveLength(SNACKS);
-    expect(state.obstacles).toHaveLength(2);
+    expect(state.obstacles).toHaveLength(3);
   });
 
   it('starts on level 1', () => {
@@ -48,16 +48,16 @@ describe('a new game', () => {
 
 describe('levels', () => {
   it.each([
-    [1, 2, 10],
-    [2, 3, 15],
-    [3, 4, 20],
-    [4, 5, 25],
-    [5, 6, 30],
-    [6, 7, 35],
-    [7, 8, 40],
-    [8, 9, 45],
-    [9, 10, 50],
-    [10, 11, 55],
+    [1, 3, 15],
+    [2, 4, 20],
+    [3, 5, 25],
+    [4, 6, 30],
+    [5, 7, 35],
+    [6, 8, 40],
+    [7, 9, 45],
+    [8, 10, 50],
+    [9, 11, 55],
+    [10, 12, 60],
   ])('level %i has %i obstacles and is played to %i circles', (level, obstacles, goal) => {
     const state = newGame({ halfH: HALF_H, level, rand: seeded(level) });
     expect(state.obstacles).toHaveLength(obstacles);
@@ -73,7 +73,7 @@ describe('levels', () => {
   it('always fits every obstacle, even on the most crowded level, on a wide or a square field', () => {
     for (const halfH of [0.75, 1]) {
       for (let seed = 1; seed <= 200; seed++) {
-        expect(newGame({ halfH, level: 10, rand: seeded(seed) }).obstacles).toHaveLength(11);
+        expect(newGame({ halfH, level: 10, rand: seeded(seed) }).obstacles).toHaveLength(12);
       }
     }
   });
@@ -82,7 +82,7 @@ describe('levels', () => {
     const state = gameWithSnackAhead();
     state.body = Array.from({ length: state.goal - 2 }, () => ({ hue: 0, born: -1 }));
     step(state, { ...idle(), dt: 0.05 });
-    expect(length(state)).toBe(10);
+    expect(length(state)).toBe(15);
     expect(state.won).toBe(true);
     expect(state.over).toBeNull();
   });
@@ -91,7 +91,7 @@ describe('levels', () => {
     const state = gameWithSnackAhead();
     state.body = Array.from({ length: state.goal - 3 }, () => ({ hue: 0, born: -1 }));
     step(state, { ...idle(), dt: 0.05 });
-    expect(length(state)).toBe(9);
+    expect(length(state)).toBe(14);
     expect(state.won).toBe(false);
   });
 
@@ -186,7 +186,7 @@ describe('game over', () => {
   });
 
   it('ends when he crawls into his own body', () => {
-    // Level 3, so his 13 circles aren't already long enough to finish it (20).
+    // Level 3, so his 13 circles aren't already long enough to finish it (25).
     const state = newGame({ halfH: HALF_H, level: 3, rand: seeded(2) });
     state.obstacles = [];
     state.snacks = [];

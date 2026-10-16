@@ -77,8 +77,8 @@ describe('placeObstacles', () => {
   });
 
   it('squeezes them closer together when the field is crowded, rather than leaving any out', () => {
-    const crowded = placeObstacles(HALF_H, 11, seeded(8));
-    expect(crowded).toHaveLength(11);
+    const crowded = placeObstacles(HALF_H, 12, seeded(8));
+    expect(crowded).toHaveLength(12);
     for (const o of crowded) expect(Math.hypot(o.x, o.y)).toBeGreaterThan(0.42 + o.r);
   });
 
