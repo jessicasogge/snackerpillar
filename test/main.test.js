@@ -58,6 +58,8 @@ function win(game) {
 function bump(game, kind = 'rock') {
   game.state.snacks = [];
   game.state.obstacles = [{ x: game.state.head.x, y: game.state.head.y - 0.1, r: 0.07, kind, lumps: [1, 1, 1], turn: 0 }];
+  game.state.head.dir = -Math.PI / 2;
+  game.keys.add('up');
   game.tick(0.05);
   vi.advanceTimersByTime(GAME_OVER_DELAY_MS);
 }
@@ -71,11 +73,11 @@ function reach(game, level) {
 }
 
 describe('the page', () => {
-  it('starts on level 1 with a one-circle caterpillar and no pop-up', () => {
+  it('starts on level 1 with a two-circle caterpillar and no pop-up', () => {
     startGame();
     expect(text('level')).toBe('Level 1');
-    expect(text('count')).toBe('1');
-    expect(text('unit')).toBe('/ 10 circles');
+    expect(text('count')).toBe('2');
+    expect(text('unit')).toBe('/ 15 circles');
     expect(banner().hidden).toBe(true);
   });
 
@@ -86,6 +88,11 @@ describe('the page', () => {
     frame(1000);
     frame(1016);
     expect(window.requestAnimationFrame).toHaveBeenCalledTimes(3);
+  });
+
+  it('goes straight from the title to the garden, with no tagline', () => {
+    expect(document.querySelector('h1').nextElementSibling.classList.contains('garden')).toBe(true);
+    expect(document.body.textContent).not.toMatch(/very hungry/);
   });
 
   it('only mentions the arrow keys and dragging in the hint', () => {
@@ -102,8 +109,8 @@ describe('the length counter', () => {
     game.state.obstacles = [];
     game.state.snacks = [{ x: 0, y: -0.06, r: 0.02, hue: 50, born: 0, eatenAt: null }];
     game.tick(0.05);
-    expect(text('count')).toBe('2');
-    expect(text('unit')).toBe('/ 10 circles');
+    expect(text('count')).toBe('3');
+    expect(text('unit')).toBe('/ 15 circles');
   });
 });
 
@@ -113,7 +120,7 @@ describe('winning a level', () => {
     win(game);
     expect(banner().hidden).toBe(false);
     expect(text('banner-title')).toBe('Level 1 complete!');
-    expect(text('banner-message')).toBe('He grew to 10 circles long!');
+    expect(text('banner-message')).toBe('He grew to 15 circles long!');
     expect(text('play-again')).toBe('Play level 2');
     expect(document.getElementById('start-over').hidden).toBe(true);
     expect(document.activeElement).toBe(document.getElementById('play-again'));
@@ -122,9 +129,10 @@ describe('winning a level', () => {
   it("doesn't show the pop-up before the moment is up", () => {
     const game = startGame();
     game.state.obstacles = [];
-    game.state.body = Array.from({ length: 8 }, () => ({ hue: 0, born: -1 }));
+    game.state.body = Array.from({ length: game.state.goal - 2 }, () => ({ hue: 0, born: -1 }));
     game.state.snacks = [{ x: 0, y: -0.06, r: 0.02, hue: 90, born: 0, eatenAt: null }];
     game.tick(0.05);
+    expect(game.state.won).toBe(true);
     vi.advanceTimersByTime(WIN_DELAY_MS - 1);
     expect(banner().hidden).toBe(true);
   });
@@ -135,17 +143,17 @@ describe('winning a level', () => {
     click('play-again');
     expect(banner().hidden).toBe(true);
     expect(text('level')).toBe('Level 2');
-    expect(text('unit')).toBe('/ 15 circles');
-    expect(text('count')).toBe('1');
-    expect(game.state.obstacles).toHaveLength(3);
+    expect(text('unit')).toBe('/ 20 circles');
+    expect(text('count')).toBe('2');
+    expect(game.state.obstacles).toHaveLength(4);
   });
 
-  it('goes all the way up to level 10, played to 55 circles', () => {
+  it('goes all the way up to level 10, played to 60 circles', () => {
     const game = startGame();
     reach(game, 10);
     expect(text('level')).toBe('Level 10');
-    expect(text('unit')).toBe('/ 55 circles');
-    expect(game.state.obstacles).toHaveLength(11);
+    expect(text('unit')).toBe('/ 60 circles');
+    expect(game.state.obstacles).toHaveLength(12);
   });
 
   it('celebrates beating level 10, then starts again from level 1', () => {
@@ -153,11 +161,11 @@ describe('winning a level', () => {
     reach(game, 10);
     win(game);
     expect(text('banner-title')).toBe('You won!');
-    expect(text('banner-message')).toBe('You beat all 10 levels with a caterpillar 55 circles long!');
+    expect(text('banner-message')).toBe('You beat all 10 levels with a caterpillar 60 circles long!');
     expect(text('play-again')).toBe('Play again');
     click('play-again');
     expect(text('level')).toBe('Level 1');
-    expect(text('unit')).toBe('/ 10 circles');
+    expect(text('unit')).toBe('/ 15 circles');
   });
 });
 
@@ -166,6 +174,7 @@ describe('game over', () => {
     const game = startGame();
     game.state.snacks = [];
     game.state.obstacles = [{ x: 0, y: -0.1, r: 0.07, kind: 'mushroom' }];
+    game.keys.add('up');
     game.tick(0.05);
     expect(banner().hidden).toBe(true); // his eyes go dizzy first
     vi.advanceTimersByTime(GAME_OVER_DELAY_MS);
@@ -188,7 +197,7 @@ describe('game over', () => {
     click('play-again');
     expect(game.state.level).toBe(3);
     expect(game.state.over).toBeNull();
-    expect(text('count')).toBe('1');
+    expect(text('count')).toBe('2');
     expect(banner().hidden).toBe(true);
   });
 
@@ -232,13 +241,14 @@ describe('Restart level', () => {
     game.state.body.push({ hue: 0, born: 0 });
     click('restart');
     expect(game.state.level).toBe(2);
-    expect(game.state.body).toHaveLength(0);
+    expect(game.state.body).toHaveLength(1);
   });
 
   it("cancels a pop-up that hasn't come up yet", () => {
     const game = startGame();
     game.state.snacks = [];
     game.state.obstacles = [{ x: 0, y: -0.1, r: 0.07, kind: 'rock', lumps: [1, 1, 1], turn: 0 }];
+    game.keys.add('up');
     game.tick(0.05);
     click('restart');
     vi.advanceTimersByTime(GAME_OVER_DELAY_MS);

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { LEVELS, RESPAWN_SECONDS, SNACKS } from '../public/game/config.js';
+import { CELL_R, LEVELS, RESPAWN_SECONDS, START_HUE } from '../public/game/config.js';
 import { seeded } from '../public/game/draw.js';
 import { hasNextLevel, length, newGame, step } from '../public/game/game.js';
 
@@ -29,15 +29,16 @@ function densify(corners) {
 describe('a new game', () => {
   const state = newGame({ halfH: HALF_H, rand: seeded(5) });
 
-  it('starts with just his head in the middle', () => {
-    expect(length(state)).toBe(1);
+  it('starts in the middle with his head and one purple circle behind it', () => {
+    expect(length(state)).toBe(2);
+    expect(state.body).toEqual([{ hue: START_HUE, born: expect.any(Number) }]);
     expect(state.head).toMatchObject({ x: 0, y: 0 });
     expect(state.over).toBeNull();
   });
 
   it('scatters dots and obstacles', () => {
-    expect(state.snacks).toHaveLength(SNACKS);
-    expect(state.obstacles).toHaveLength(2);
+    expect(state.snacks).toHaveLength(12);
+    expect(state.obstacles).toHaveLength(3);
   });
 
   it('starts on level 1', () => {
@@ -48,16 +49,16 @@ describe('a new game', () => {
 
 describe('levels', () => {
   it.each([
-    [1, 2, 10],
-    [2, 3, 15],
-    [3, 4, 20],
-    [4, 5, 25],
-    [5, 6, 30],
-    [6, 7, 35],
-    [7, 8, 40],
-    [8, 9, 45],
-    [9, 10, 50],
-    [10, 11, 55],
+    [1, 3, 15],
+    [2, 4, 20],
+    [3, 5, 25],
+    [4, 6, 30],
+    [5, 7, 35],
+    [6, 8, 40],
+    [7, 9, 45],
+    [8, 10, 50],
+    [9, 11, 55],
+    [10, 12, 60],
   ])('level %i has %i obstacles and is played to %i circles', (level, obstacles, goal) => {
     const state = newGame({ halfH: HALF_H, level, rand: seeded(level) });
     expect(state.obstacles).toHaveLength(obstacles);
@@ -73,7 +74,7 @@ describe('levels', () => {
   it('always fits every obstacle, even on the most crowded level, on a wide or a square field', () => {
     for (const halfH of [0.75, 1]) {
       for (let seed = 1; seed <= 200; seed++) {
-        expect(newGame({ halfH, level: 10, rand: seeded(seed) }).obstacles).toHaveLength(11);
+        expect(newGame({ halfH, level: 10, rand: seeded(seed) }).obstacles).toHaveLength(12);
       }
     }
   });
@@ -82,7 +83,7 @@ describe('levels', () => {
     const state = gameWithSnackAhead();
     state.body = Array.from({ length: state.goal - 2 }, () => ({ hue: 0, born: -1 }));
     step(state, { ...idle(), dt: 0.05 });
-    expect(length(state)).toBe(10);
+    expect(length(state)).toBe(15);
     expect(state.won).toBe(true);
     expect(state.over).toBeNull();
   });
@@ -91,7 +92,7 @@ describe('levels', () => {
     const state = gameWithSnackAhead();
     state.body = Array.from({ length: state.goal - 3 }, () => ({ hue: 0, born: -1 }));
     step(state, { ...idle(), dt: 0.05 });
-    expect(length(state)).toBe(9);
+    expect(length(state)).toBe(14);
     expect(state.won).toBe(false);
   });
 
@@ -113,13 +114,39 @@ describe('levels', () => {
   });
 });
 
+describe('moving', () => {
+  it("stays put when you aren't steering him", () => {
+    const state = newGame({ halfH: HALF_H, rand: seeded(4) });
+    const before = { ...state.head };
+    for (let i = 0; i < 100; i++) step(state, { ...idle(), dt: 0.05 });
+    expect(state.head).toEqual(before);
+    expect(state.over).toBeNull();
+  });
+
+  it('crawls up when you hold the up arrow', () => {
+    const state = newGame({ halfH: HALF_H, rand: seeded(4) });
+    state.obstacles = [];
+    step(state, { ...idle(), keys: new Set(['up']), dt: 0.05 });
+    expect(state.head.y).toBeLessThan(0);
+  });
+
+  it('stops at the edge of the garden instead of turning around', () => {
+    const state = newGame({ halfH: HALF_H, rand: seeded(4) });
+    state.obstacles = [];
+    state.snacks = [];
+    for (let i = 0; i < 100; i++) step(state, { ...idle(), keys: new Set(['up']), dt: 0.05 });
+    expect(state.head.y).toBeCloseTo(-(HALF_H - CELL_R * 1.2));
+    expect(state.head.dir).toBeCloseTo(-Math.PI / 2);
+  });
+});
+
 describe('eating', () => {
   it('adds a circle in the color of the dot he ate', () => {
     const state = gameWithSnackAhead(200);
     const eaten = step(state, { ...idle(), dt: 0.05 });
     expect(eaten).toEqual([200]);
-    expect(length(state)).toBe(2);
-    expect(state.body[0].hue).toBe(200);
+    expect(length(state)).toBe(3);
+    expect(state.body.at(-1).hue).toBe(200);
   });
 
   it('adds each new circle to the end of his body', () => {
@@ -127,7 +154,7 @@ describe('eating', () => {
     step(state, { ...idle(), dt: 0.05 });
     state.snacks.push({ x: state.head.x, y: state.head.y - 0.06, r: 0.02, hue: 300, born: 0, eatenAt: null });
     step(state, { ...idle(), dt: 0.05 });
-    expect(state.body.map((c) => c.hue)).toEqual([10, 300]);
+    expect(state.body.map((c) => c.hue)).toEqual([START_HUE, 10, 300]);
   });
 
   it('lets the eaten dot shrink away, then brings a new one back later', () => {
@@ -147,7 +174,7 @@ describe('game over', () => {
     const state = gameWithSnackAhead();
     state.snacks = [];
     state.obstacles = [{ x: 0, y: -0.1, r: 0.07, kind: 'rock' }];
-    step(state, { ...idle(), dt: 0.05 });
+    step(state, { ...idle(), keys: new Set(['up']), dt: 0.05 });
     expect(state.over).toBe('rock');
   });
 
@@ -155,12 +182,12 @@ describe('game over', () => {
     const state = gameWithSnackAhead();
     state.snacks = [];
     state.obstacles = [{ x: 0, y: -0.1, r: 0.07, kind: 'mushroom' }];
-    step(state, { ...idle(), dt: 0.05 });
+    step(state, { ...idle(), keys: new Set(['up']), dt: 0.05 });
     expect(state.over).toBe('mushroom');
   });
 
   it('ends when he crawls into his own body', () => {
-    // Level 3, so his 13 circles aren't already long enough to finish it (20).
+    // Level 3, so his 13 circles aren't already long enough to finish it (25).
     const state = newGame({ halfH: HALF_H, level: 3, rand: seeded(2) });
     state.obstacles = [];
     state.snacks = [];

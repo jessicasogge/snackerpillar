@@ -12,24 +12,32 @@ describe('keepInField', () => {
     expect(head).toEqual({ x: 0.2, y: -0.1, dir: 1 });
   });
 
-  it('stops him at the right edge and turns him back left', () => {
+  it("stops him at the right edge without turning him around", () => {
     const head = { x: 1.2, y: 0, dir: 0 };
     keepInField(head, HALF_H);
     expect(head.x).toBeCloseTo(1 - CELL_R * 1.2);
-    expect(Math.cos(head.dir)).toBeLessThan(0);
+    expect(head.dir).toBe(0);
   });
 
-  it('stops him at the bottom edge and turns him back up', () => {
+  it("stops him at the bottom edge without turning him around", () => {
     const head = { x: 0, y: 2, dir: Math.PI / 2 };
     keepInField(head, HALF_H);
     expect(head.y).toBeCloseTo(HALF_H - CELL_R * 1.2);
-    expect(Math.sin(head.dir)).toBeLessThan(0);
+    expect(head.dir).toBe(Math.PI / 2);
   });
 
-  it("doesn't turn him if he's already heading away from the edge", () => {
-    const head = { x: -1.5, y: 0, dir: 0 };
+  it('lets him slide along an edge', () => {
+    const head = { x: -1.5, y: 0.3, dir: 2.5 };
     keepInField(head, HALF_H);
-    expect(head.dir).toBe(0);
+    expect(head.x).toBeCloseTo(-(1 - CELL_R * 1.2));
+    expect(head.y).toBe(0.3);
+  });
+
+  it('holds him in a corner', () => {
+    const head = { x: 3, y: -3, dir: -0.8 };
+    keepInField(head, HALF_H);
+    expect(head.x).toBeCloseTo(1 - CELL_R * 1.2);
+    expect(head.y).toBeCloseTo(-(HALF_H - CELL_R * 1.2));
   });
 });
 
@@ -69,8 +77,8 @@ describe('placeObstacles', () => {
   });
 
   it('squeezes them closer together when the field is crowded, rather than leaving any out', () => {
-    const crowded = placeObstacles(HALF_H, 11, seeded(8));
-    expect(crowded).toHaveLength(11);
+    const crowded = placeObstacles(HALF_H, 12, seeded(8));
+    expect(crowded).toHaveLength(12);
     for (const o of crowded) expect(Math.hypot(o.x, o.y)).toBeGreaterThan(0.42 + o.r);
   });
 

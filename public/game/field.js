@@ -1,17 +1,12 @@
 import { CELL_R } from './config.js';
 
-// Keep the head on the field, turning him back when he reaches an edge.
+// Keep the head on the field. At an edge he just stops, still facing the
+// way you steered him, and can slide along it; he isn't turned around.
 export function keepInField(head, halfH) {
   const mx = 1 - CELL_R * 1.2;
   const my = halfH - CELL_R * 1.2;
-  if (Math.abs(head.x) > mx) {
-    head.x = Math.sign(head.x) * mx;
-    if (Math.cos(head.dir) * Math.sign(head.x) > 0) head.dir = Math.PI - head.dir;
-  }
-  if (Math.abs(head.y) > my) {
-    head.y = Math.sign(head.y) * my;
-    if (Math.sin(head.dir) * Math.sign(head.y) > 0) head.dir = -head.dir;
-  }
+  head.x = Math.max(-mx, Math.min(mx, head.x));
+  head.y = Math.max(-my, Math.min(my, head.y));
 }
 
 // Rocks and mushrooms, kept away from where he starts (the middle, and the

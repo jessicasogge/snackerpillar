@@ -4,27 +4,26 @@ A browser game about a very hungry caterpillar made of circles. Every dot he eat
 
 ## How to play
 
-- **Move** with the arrow keys. On a touch screen, drag anywhere on the grass like a trackpad: he moves the way your finger slides, so your finger never hides him.
-- **Eat the colored dots** to grow. Each one adds a circle to the end of his body in its color, and a new dot appears somewhere else a moment later.
-- **Don't bump into rocks, mushrooms or his own body.** Any of those ends the level. The edges of the garden are safe: he just turns around.
-- Left alone, he keeps crawling slowly on his own, so keep an eye on him.
+- **Move** with the arrow keys. He only moves while you're steering him, and turns sharply enough to U-turn without running into himself. On a touch screen, drag anywhere on the grass like a trackpad: he moves the way your finger slides, so your finger never hides him.
+- **Eat the colored dots** to grow. He starts with one purple circle behind his head. Each one adds a circle to the end of his body in its color, and a new dot appears somewhere else a moment later.
+- **Don't bump into rocks, mushrooms or his own body.** Any of those ends the level. The edges of the garden are safe: he just stops there, and you can slide him along them.
 
 ### Levels
 
-There are 10 levels. Level 1 has 2 obstacles and you play until he's 10 circles long. Each level after that adds one more obstacle and 5 more circles:
+There are 10 levels. Level 1 has 3 obstacles and you play until he's 15 circles long. Each level after that adds one more obstacle and 5 more circles:
 
 | Level | Obstacles | Grow to |
 |---|---|---|
-| 1 | 2 | 10 circles |
-| 2 | 3 | 15 circles |
-| 3 | 4 | 20 circles |
-| 4 | 5 | 25 circles |
-| 5 | 6 | 30 circles |
-| 6 | 7 | 35 circles |
-| 7 | 8 | 40 circles |
-| 8 | 9 | 45 circles |
-| 9 | 10 | 50 circles |
-| 10 | 11 | 55 circles |
+| 1 | 3 | 15 circles |
+| 2 | 4 | 20 circles |
+| 3 | 5 | 25 circles |
+| 4 | 6 | 30 circles |
+| 5 | 7 | 35 circles |
+| 6 | 8 | 40 circles |
+| 7 | 9 | 45 circles |
+| 8 | 10 | 50 circles |
+| 9 | 11 | 55 circles |
+| 10 | 12 | 60 circles |
 
 At the end of every level, a pop-up tells you how it went:
 
