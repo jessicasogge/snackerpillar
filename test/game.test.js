@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CELL_R, LEVELS, RESPAWN_SECONDS, SNACKS } from '../public/game/config.js';
+import { CELL_R, LEVELS, RESPAWN_SECONDS, START_HUE } from '../public/game/config.js';
 import { seeded } from '../public/game/draw.js';
 import { hasNextLevel, length, newGame, step } from '../public/game/game.js';
 
@@ -29,14 +29,15 @@ function densify(corners) {
 describe('a new game', () => {
   const state = newGame({ halfH: HALF_H, rand: seeded(5) });
 
-  it('starts with just his head in the middle', () => {
-    expect(length(state)).toBe(1);
+  it('starts in the middle with his head and one purple circle behind it', () => {
+    expect(length(state)).toBe(2);
+    expect(state.body).toEqual([{ hue: START_HUE, born: expect.any(Number) }]);
     expect(state.head).toMatchObject({ x: 0, y: 0 });
     expect(state.over).toBeNull();
   });
 
   it('scatters dots and obstacles', () => {
-    expect(state.snacks).toHaveLength(SNACKS);
+    expect(state.snacks).toHaveLength(12);
     expect(state.obstacles).toHaveLength(3);
   });
 
@@ -144,8 +145,8 @@ describe('eating', () => {
     const state = gameWithSnackAhead(200);
     const eaten = step(state, { ...idle(), dt: 0.05 });
     expect(eaten).toEqual([200]);
-    expect(length(state)).toBe(2);
-    expect(state.body[0].hue).toBe(200);
+    expect(length(state)).toBe(3);
+    expect(state.body.at(-1).hue).toBe(200);
   });
 
   it('adds each new circle to the end of his body', () => {
@@ -153,7 +154,7 @@ describe('eating', () => {
     step(state, { ...idle(), dt: 0.05 });
     state.snacks.push({ x: state.head.x, y: state.head.y - 0.06, r: 0.02, hue: 300, born: 0, eatenAt: null });
     step(state, { ...idle(), dt: 0.05 });
-    expect(state.body.map((c) => c.hue)).toEqual([10, 300]);
+    expect(state.body.map((c) => c.hue)).toEqual([START_HUE, 10, 300]);
   });
 
   it('lets the eaten dot shrink away, then brings a new one back later', () => {

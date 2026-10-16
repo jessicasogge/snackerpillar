@@ -2,9 +2,10 @@
 // -1 to 1) and 2 * halfH tall, centered on (0, 0).
 export const CELL_R = 0.045; // one body circle's radius
 export const SPACING = CELL_R * 1.7; // neighbors overlap a little so he reads as one body
-export const SNACKS = 14; // dots on the grass at a time
+export const SNACKS = 12; // dots on the grass at a time
 export const RESPAWN_SECONDS = 2.5; // how long an eaten dot takes to come back
 export const HEAD_HUE = 34; // sunny orange
+export const START_HUE = 275; // the purple circle he starts with behind his head
 // Each level: how many rocks and mushrooms are on the grass, and how many
 // circles long he has to grow to finish it. Level 1 has 3 obstacles and is
 // played to 15; each level after adds one more obstacle and 5 more circles,

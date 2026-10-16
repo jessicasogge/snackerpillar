@@ -73,10 +73,10 @@ function reach(game, level) {
 }
 
 describe('the page', () => {
-  it('starts on level 1 with a one-circle caterpillar and no pop-up', () => {
+  it('starts on level 1 with a two-circle caterpillar and no pop-up', () => {
     startGame();
     expect(text('level')).toBe('Level 1');
-    expect(text('count')).toBe('1');
+    expect(text('count')).toBe('2');
     expect(text('unit')).toBe('/ 15 circles');
     expect(banner().hidden).toBe(true);
   });
@@ -109,7 +109,7 @@ describe('the length counter', () => {
     game.state.obstacles = [];
     game.state.snacks = [{ x: 0, y: -0.06, r: 0.02, hue: 50, born: 0, eatenAt: null }];
     game.tick(0.05);
-    expect(text('count')).toBe('2');
+    expect(text('count')).toBe('3');
     expect(text('unit')).toBe('/ 15 circles');
   });
 });
@@ -144,7 +144,7 @@ describe('winning a level', () => {
     expect(banner().hidden).toBe(true);
     expect(text('level')).toBe('Level 2');
     expect(text('unit')).toBe('/ 20 circles');
-    expect(text('count')).toBe('1');
+    expect(text('count')).toBe('2');
     expect(game.state.obstacles).toHaveLength(4);
   });
 
@@ -197,7 +197,7 @@ describe('game over', () => {
     click('play-again');
     expect(game.state.level).toBe(3);
     expect(game.state.over).toBeNull();
-    expect(text('count')).toBe('1');
+    expect(text('count')).toBe('2');
     expect(banner().hidden).toBe(true);
   });
 
@@ -241,7 +241,7 @@ describe('Restart level', () => {
     game.state.body.push({ hue: 0, born: 0 });
     click('restart');
     expect(game.state.level).toBe(2);
-    expect(game.state.body).toHaveLength(0);
+    expect(game.state.body).toHaveLength(1);
   });
 
   it("cancels a pop-up that hasn't come up yet", () => {

@@ -1,11 +1,12 @@
-import { LEVELS, RESPAWN_SECONDS, SNACKS, SPACING } from './config.js';
+import { LEVELS, RESPAWN_SECONDS, SNACKS, SPACING, START_HUE } from './config.js';
 import { obstacleHit, tailHit, touchesSnack } from './collide.js';
 import { keepInField, newSnack, placeObstacles } from './field.js';
 import { steer } from './steer.js';
 import { extendTrail, trimTrail } from './trail.js';
 
-// A fresh game of a level (1 to 10): just his head in the middle, facing up,
-// with that level's obstacles and the dots scattered around him.
+// A fresh game of a level (1 to 10): his head in the middle, facing up, with
+// one circle behind it, and that level's obstacles and the dots scattered
+// around him.
 export function newGame({ halfH, level = 1, rand = Math.random }) {
   const { obstacles, goal } = LEVELS[level - 1];
   const state = {
@@ -13,7 +14,7 @@ export function newGame({ halfH, level = 1, rand = Math.random }) {
     goal, // how many circles long he has to grow to finish the level
     head: { x: 0, y: 0, dir: -Math.PI / 2 },
     trail: [{ x: 0, y: 0 }],
-    body: [], // { hue, born }, from just behind the head to the tail
+    body: [{ hue: START_HUE, born: -1 }], // { hue, born }, from just behind the head to the tail
     snacks: [],
     obstacles: placeObstacles(halfH, obstacles, rand),
     respawns: [], // when each eaten dot comes back, in game seconds
