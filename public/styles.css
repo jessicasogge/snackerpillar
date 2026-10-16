@@ -140,6 +140,15 @@ h1 {
   font-variant-numeric: tabular-nums;
 }
 
+.tally .level {
+  margin-right: 6px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #2b1a05;
+  font-size: 0.95rem;
+}
+
 .tally small {
   font-family: var(--body);
   font-size: 0.85rem;

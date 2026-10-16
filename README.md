@@ -6,8 +6,20 @@ A browser game about a very hungry caterpillar made of circles. Every dot he eat
 
 - **Move** with the arrow keys. On a touch screen, drag anywhere on the grass like a trackpad: he moves the way your finger slides, so your finger never hides him.
 - **Eat the colored dots** to grow. Each one adds a circle to the end of his body in its color, and a new dot appears somewhere else a moment later.
-- **Don't bump into rocks, mushrooms or his own body.** Any of those ends the game. The edges of the garden are safe: he just turns around.
+- **Don't bump into rocks, mushrooms or his own body.** Any of those ends the level, and **Try again** starts it over. The edges of the garden are safe: he just turns around.
 - Left alone, he keeps crawling slowly on his own, so keep an eye on him.
+
+### Levels
+
+Grow him long enough to finish each level, then tap **Next level**. Each one adds another obstacle and a longer goal:
+
+| Level | Obstacles | Grow to |
+|---|---|---|
+| 1 | 2 | 10 circles |
+| 2 | 3 | 15 circles |
+| 3 | 4 | 20 circles |
+
+Beat level 3 and **Play again** takes you back to level 1. The levels are set in `LEVELS` in `public/game/config.js`.
 
 ## Running it locally
 
@@ -34,14 +46,14 @@ The server (`src/index.ts`) is a small Express app that serves the `public/` fol
 
 | File | What's in it |
 |---|---|
-| `config.js` | Sizes, speeds and counts: how big a circle is, how many dots and obstacles, and so on |
-| `game.js` | A game's state, and moving it on one frame at a time: eating, growing, and game over |
+| `config.js` | Sizes, speeds and counts: how big a circle is, how many dots there are, and each level's obstacles and goal |
+| `game.js` | A level's state, and moving it on one frame at a time: eating, growing, finishing the level, and game over |
 | `steer.js` | How the arrow keys and dragging move him |
 | `trail.js` | The path his head has taken, which his body follows |
 | `field.js` | Keeping him on the field, and placing obstacles and dots |
 | `collide.js` | Whether he's touching a dot, an obstacle or his own body |
 | `draw.js` | Drawing the lawn, dots, rocks, mushrooms and him on the canvas |
-| `main.js` | Connecting it all to the page: input, the animation loop and the length counter |
+| `main.js` | Connecting it all to the page: input, the animation loop, the level and length counter, and the button |
 
 Tests live in `test/` and run with [Vitest](https://vitest.dev/). GitHub Actions runs them on every push and pull request.
 

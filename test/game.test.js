@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { OBSTACLES, RESPAWN_SECONDS, SNACKS } from '../public/game/config.js';
+import { LEVELS, RESPAWN_SECONDS, SNACKS } from '../public/game/config.js';
 import { seeded } from '../public/game/draw.js';
-import { length, newGame, step } from '../public/game/game.js';
+import { hasNextLevel, length, newGame, step } from '../public/game/game.js';
 
 const HALF_H = 0.75;
 const idle = () => ({ keys: new Set(), drag: { x: 0, y: 0 }, halfH: HALF_H });
@@ -37,7 +37,65 @@ describe('a new game', () => {
 
   it('scatters dots and obstacles', () => {
     expect(state.snacks).toHaveLength(SNACKS);
-    expect(state.obstacles).toHaveLength(OBSTACLES);
+    expect(state.obstacles).toHaveLength(2);
+  });
+
+  it('starts on level 1', () => {
+    expect(state.level).toBe(1);
+    expect(state.won).toBe(false);
+  });
+});
+
+describe('levels', () => {
+  it.each([
+    [1, 2, 10],
+    [2, 3, 15],
+    [3, 4, 20],
+  ])('level %i has %i obstacles and is played to %i circles', (level, obstacles, goal) => {
+    const state = newGame({ halfH: HALF_H, level, rand: seeded(level) });
+    expect(state.obstacles).toHaveLength(obstacles);
+    expect(state.goal).toBe(goal);
+  });
+
+  it('has three levels, with a next one after the first two', () => {
+    expect(LEVELS).toHaveLength(3);
+    expect(hasNextLevel(newGame({ halfH: HALF_H, level: 1 }))).toBe(true);
+    expect(hasNextLevel(newGame({ halfH: HALF_H, level: 2 }))).toBe(true);
+    expect(hasNextLevel(newGame({ halfH: HALF_H, level: 3 }))).toBe(false);
+  });
+
+  it('finishes the level when he grows to the goal', () => {
+    const state = gameWithSnackAhead();
+    state.body = Array.from({ length: state.goal - 2 }, () => ({ hue: 0, born: -1 }));
+    step(state, { ...idle(), dt: 0.05 });
+    expect(length(state)).toBe(10);
+    expect(state.won).toBe(true);
+    expect(state.over).toBeNull();
+  });
+
+  it("isn't finished one circle short of the goal", () => {
+    const state = gameWithSnackAhead();
+    state.body = Array.from({ length: state.goal - 3 }, () => ({ hue: 0, born: -1 }));
+    step(state, { ...idle(), dt: 0.05 });
+    expect(length(state)).toBe(9);
+    expect(state.won).toBe(false);
+  });
+
+  it('counts the win even if he reaches the goal right next to a rock', () => {
+    const state = gameWithSnackAhead();
+    state.body = Array.from({ length: state.goal - 2 }, () => ({ hue: 0, born: -1 }));
+    state.obstacles = [{ x: 0, y: -0.12, r: 0.07, kind: 'rock' }];
+    step(state, { ...idle(), dt: 0.05 });
+    expect(state.won).toBe(true);
+    expect(state.over).toBeNull();
+  });
+
+  it('holds still once the level is finished', () => {
+    const state = gameWithSnackAhead();
+    state.won = true;
+    const before = JSON.stringify(state);
+    expect(step(state, { ...idle(), dt: 0.05 })).toEqual([]);
+    expect(JSON.stringify(state)).toBe(before);
   });
 });
 
@@ -88,7 +146,8 @@ describe('game over', () => {
   });
 
   it('ends when he crawls into his own body', () => {
-    const state = newGame({ halfH: HALF_H, rand: seeded(2) });
+    // Level 3, so his 13 circles aren't already long enough to finish it.
+    const state = newGame({ halfH: HALF_H, level: 3, rand: seeded(2) });
     state.obstacles = [];
     state.snacks = [];
     state.body = Array.from({ length: 12 }, () => ({ hue: 0, born: -1 }));

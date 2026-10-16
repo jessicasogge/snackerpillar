@@ -35,10 +35,11 @@ const pointer = (type, x, y, id = 1) => {
 };
 
 describe('the page', () => {
-  it('starts with a one-circle caterpillar and nothing to report', () => {
+  it('starts on level 1 with a one-circle caterpillar and nothing to report', () => {
     startGame();
+    expect(text('level')).toBe('Level 1');
     expect(text('count')).toBe('1');
-    expect(text('unit')).toBe('circle long');
+    expect(text('unit')).toBe('/ 10 circles');
     expect(text('status')).toBe('');
     expect(text('restart')).toBe('Start over');
   });
@@ -70,21 +71,21 @@ describe('the length counter', () => {
     game.state.snacks = [{ x: 0, y: -0.06, r: 0.02, hue: 50, born: 0, eatenAt: null }];
     game.tick(0.05);
     expect(text('count')).toBe('2');
-    expect(text('unit')).toBe('circles long');
+    expect(text('unit')).toBe('/ 10 circles');
   });
 });
 
 describe('game over', () => {
-  it('says what he bumped into, and offers to play again', () => {
+  it('says what he bumped into, and offers to try again', () => {
     const game = startGame();
     game.state.snacks = [];
     game.state.obstacles = [{ x: 0, y: -0.1, r: 0.07, kind: 'mushroom' }];
     game.tick(0.05);
     expect(text('status')).toBe('Bonk! He ran into a mushroom.');
-    expect(text('restart')).toBe('Play again');
+    expect(text('restart')).toBe('Try again');
   });
 
-  it('starts a fresh game from the button', () => {
+  it('starts the same level over from the button', () => {
     const game = startGame();
     game.state.snacks = [];
     game.state.obstacles = [{ x: 0, y: -0.1, r: 0.07, kind: 'rock', lumps: [1, 1, 1], turn: 0 }];
@@ -96,6 +97,16 @@ describe('game over', () => {
     expect(text('restart')).toBe('Start over');
   });
 
+  it('retries the level he was on, not level 1', () => {
+    const game = startGame();
+    win(game);
+    document.getElementById('restart').click(); // on to level 2
+    bump(game);
+    document.getElementById('restart').click();
+    expect(game.state.level).toBe(2);
+    expect(text('level')).toBe('Level 2');
+  });
+
   it("doesn't remember a best score", () => {
     const setItem = vi.spyOn(Storage.prototype, 'setItem');
     const game = startGame();
@@ -103,6 +114,72 @@ describe('game over', () => {
     game.tick(0.05);
     expect(setItem).not.toHaveBeenCalled();
     expect(document.body.textContent).not.toMatch(/best/i);
+  });
+});
+
+// Grow him to one circle short of the goal, then feed him the last dot.
+function win(game) {
+  game.state.obstacles = [];
+  game.state.body = Array.from({ length: game.state.goal - 2 }, () => ({ hue: 0, born: -1 }));
+  game.state.snacks = [{ x: game.state.head.x, y: game.state.head.y - 0.06, r: 0.02, hue: 90, born: 0, eatenAt: null }];
+  game.state.head.dir = -Math.PI / 2;
+  game.tick(0.05);
+}
+
+function bump(game) {
+  game.state.snacks = [];
+  game.state.obstacles = [{ x: game.state.head.x, y: game.state.head.y - 0.1, r: 0.07, kind: 'rock', lumps: [1, 1, 1], turn: 0 }];
+  game.tick(0.05);
+}
+
+describe('levels', () => {
+  it('says the level is done and offers the next one', () => {
+    const game = startGame();
+    win(game);
+    expect(text('count')).toBe('10');
+    expect(text('status')).toBe('Level 1 done! He grew to 10 circles.');
+    expect(text('restart')).toBe('Next level');
+    expect(document.activeElement).toBe(document.getElementById('restart'));
+  });
+
+  it('goes on to level 2, then level 3, each with its own goal', () => {
+    const game = startGame();
+    win(game);
+    document.getElementById('restart').click();
+    expect(text('level')).toBe('Level 2');
+    expect(text('unit')).toBe('/ 15 circles');
+    expect(text('count')).toBe('1');
+    expect(text('status')).toBe('');
+    expect(game.state.obstacles).toHaveLength(3);
+    win(game);
+    expect(text('status')).toBe('Level 2 done! He grew to 15 circles.');
+    document.getElementById('restart').click();
+    expect(text('level')).toBe('Level 3');
+    expect(text('unit')).toBe('/ 20 circles');
+    expect(game.state.obstacles).toHaveLength(4);
+  });
+
+  it('celebrates beating level 3, then starts again from level 1', () => {
+    const game = startGame();
+    for (let level = 1; level <= 3; level++) {
+      win(game);
+      if (level < 3) document.getElementById('restart').click();
+    }
+    expect(text('status')).toBe('You beat all 3 levels! He grew to 20 circles.');
+    expect(text('restart')).toBe('Play again');
+    document.getElementById('restart').click();
+    expect(text('level')).toBe('Level 1');
+    expect(text('unit')).toBe('/ 10 circles');
+  });
+
+  it('restarts the current level from Start over while playing', () => {
+    const game = startGame();
+    win(game);
+    document.getElementById('restart').click();
+    game.state.body.push({ hue: 0, born: 0 });
+    document.getElementById('restart').click();
+    expect(game.state.level).toBe(2);
+    expect(game.state.body).toHaveLength(0);
   });
 });
 

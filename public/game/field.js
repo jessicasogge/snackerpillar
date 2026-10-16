@@ -1,4 +1,4 @@
-import { CELL_R, OBSTACLES } from './config.js';
+import { CELL_R } from './config.js';
 
 // Keep the head on the field, turning him back when he reaches an edge.
 export function keepInField(head, halfH) {
@@ -16,7 +16,7 @@ export function keepInField(head, halfH) {
 
 // Rocks and mushrooms, kept away from where he starts (the middle, and the
 // line his body trails along below it) and from each other.
-export function placeObstacles(halfH, rand = Math.random, count = OBSTACLES) {
+export function placeObstacles(halfH, count, rand = Math.random) {
   const obstacles = [];
   for (let i = 0; i < count; i++) {
     for (let tries = 0; tries < 80; tries++) {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CELL_R, OBSTACLES } from '../public/game/config.js';
+import { CELL_R } from '../public/game/config.js';
 import { keepInField, newSnack, placeObstacles } from '../public/game/field.js';
 import { seeded } from '../public/game/draw.js';
 
@@ -34,10 +34,11 @@ describe('keepInField', () => {
 });
 
 describe('placeObstacles', () => {
-  const obstacles = placeObstacles(HALF_H, seeded(42));
+  // More than any level has, to check they still fit without crowding.
+  const obstacles = placeObstacles(HALF_H, 7, seeded(42));
 
-  it('places the usual number of rocks and mushrooms', () => {
-    expect(obstacles).toHaveLength(OBSTACLES);
+  it('places as many rocks and mushrooms as asked', () => {
+    expect(obstacles).toHaveLength(7);
     for (const o of obstacles) expect(['rock', 'mushroom']).toContain(o.kind);
   });
 
@@ -64,7 +65,7 @@ describe('placeObstacles', () => {
   });
 
   it('gives up on one it cannot fit rather than looping forever', () => {
-    expect(placeObstacles(0.2, () => 0.5, 3)).toEqual([]);
+    expect(placeObstacles(0.2, 3, () => 0.5)).toEqual([]);
   });
 });
 
