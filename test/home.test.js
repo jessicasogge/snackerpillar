@@ -1,16 +1,14 @@
 // @vitest-environment jsdom
-// The home page's caterpillar: drawn from game/home.js, and fed a dot each
-// time she's tapped.
+// The home page's caterpillar, drawn by game/home.js: just a picture.
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { HEAD_HUE, START_HUE } from '../public/game/config.js';
-import { seeded } from '../public/game/draw.js';
 
-let caterpillarSvg, setUpHome, HOME_HUES, MAX_HOME_CIRCLES;
+let caterpillarSvg, drawHome, HOME_HUES;
 beforeAll(async () => {
   globalThis.__SNACKERPILLAR_TEST__ = true;
-  ({ caterpillarSvg, setUpHome, HOME_HUES, MAX_HOME_CIRCLES } = await import('../public/game/home.js'));
+  ({ caterpillarSvg, drawHome, HOME_HUES } = await import('../public/game/home.js'));
 });
 
 const page = readFileSync(resolve(__dirname, '../public/index.html'), 'utf8');
@@ -52,29 +50,23 @@ describe('caterpillarSvg', () => {
 });
 
 describe('the home page', () => {
-  it('shows her with a rainbow body, starting from her purple circle', () => {
-    const button = document.querySelector('.home-caterpillar');
-    setUpHome(button);
-    expect(fills(button)).toHaveLength(HOME_HUES.length + 1);
-    expect(fills(button)[0]).toBe(`hsl(${START_HUE} 72% 64%)`);
+  it('shows her with a long rainbow body, starting from her purple circle', () => {
+    const el = document.querySelector('.home-caterpillar');
+    drawHome(el);
+    expect(fills(el)).toHaveLength(18); // 17 body circles and her head
+    expect(fills(el)[0]).toBe(`hsl(${START_HUE} 72% 64%)`);
+    expect(new Set(HOME_HUES).size).toBe(17); // every circle a different color
   });
 
-  it('grows her a circle each time she is tapped', () => {
-    const button = document.querySelector('.home-caterpillar');
-    const home = setUpHome(button, seeded(3));
-    button.click();
-    button.click();
-    expect(home.hues).toHaveLength(HOME_HUES.length + 2);
-    expect(fills(button)).toHaveLength(HOME_HUES.length + 3);
-    expect(button.classList.contains('fed')).toBe(true);
-  });
-
-  it('starts her over small once she gets too long for the page', () => {
-    const button = document.querySelector('.home-caterpillar');
-    const home = setUpHome(button, seeded(3));
-    while (home.hues.length + 1 < MAX_HOME_CIRCLES) button.click();
-    button.click();
-    expect(home.hues).toEqual([START_HUE]);
+  it("isn't something you can click or tab to", () => {
+    const el = document.querySelector('.home-caterpillar');
+    drawHome(el);
+    expect(el.tagName).toBe('DIV');
+    expect(el.getAttribute('aria-hidden')).toBe('true');
+    expect(el.querySelector('button, a, [tabindex]')).toBeNull();
+    const before = el.innerHTML;
+    el.click();
+    expect(el.innerHTML).toBe(before);
   });
 
   it('has a Start button that goes to the game', () => {
@@ -87,9 +79,6 @@ describe('the home page', () => {
     expect(document.querySelector('.lawn')).toBeNull();
   });
 
-  it('tells screen readers what tapping her does', () => {
-    expect(document.querySelector('.home-caterpillar').getAttribute('aria-label')).toBe('Feed the caterpillar a dot');
-  });
 
   it('says it is a Tiny Game Arcade game, with a link to the arcade, and is signed', () => {
     const line = document.querySelector('.sister-game');

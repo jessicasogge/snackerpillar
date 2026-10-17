@@ -2,10 +2,10 @@ import { HEAD_HUE, START_HUE } from './config.js';
 
 // The caterpillar on the home page (and in the link preview): a wavy line of
 // colored circles, tail on the left, head on the right with her face and
-// antennae. Tap her to feed her a dot and she grows another circle.
+// antennae. She's just a picture; tapping her does nothing.
 
-export const HOME_HUES = [START_HUE, 200, 140, 50, 345, 185, 300];
-export const MAX_HOME_CIRCLES = 14;
+// A rainbow of 17 body circles, starting from her purple one at the tail.
+export const HOME_HUES = Array.from({ length: 17 }, (_, i) => (START_HUE + i * 20) % 360);
 
 const R = 20; // a circle's radius
 const STEP = 32; // from one circle's middle to the next
@@ -62,24 +62,11 @@ export function caterpillarSvg(hues) {
   );
 }
 
-// Draw her into the button `el`, and feed her a dot each time it's pressed,
-// until she reaches MAX_HOME_CIRCLES; then she starts over small.
-export function setUpHome(el, rand = Math.random) {
-  let hues = [...HOME_HUES];
-  const draw = () => {
-    el.innerHTML = caterpillarSvg(hues);
-  };
-  el.addEventListener('click', () => {
-    hues = hues.length + 1 >= MAX_HOME_CIRCLES ? [START_HUE] : [...hues, Math.floor(rand() * 360)];
-    draw();
-    el.classList.remove('fed');
-    void el.offsetWidth; // restart the little bounce
-    el.classList.add('fed');
-  });
-  draw();
-  return { get hues() { return hues; } };
+// Draw her into the element `el`.
+export function drawHome(el) {
+  el.innerHTML = caterpillarSvg(HOME_HUES);
 }
 
 if (typeof document !== 'undefined' && document.querySelector('.home-caterpillar') && !globalThis.__SNACKERPILLAR_TEST__) {
-  setUpHome(document.querySelector('.home-caterpillar'));
+  drawHome(document.querySelector('.home-caterpillar'));
 }

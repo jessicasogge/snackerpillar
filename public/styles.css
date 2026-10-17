@@ -294,15 +294,10 @@ body.home main {
 }
 
 .home-caterpillar {
-  width: min(520px, 100%);
+  /* Wider than the Snackerpillar logo under her, on any screen. */
+  width: min(680px, 100%);
   margin-top: 2.5rem;
-  padding: 0;
-  border: none;
-  background: none;
-  cursor: pointer;
-  max-width: 100%;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
+  pointer-events: none;
 }
 
 .home-caterpillar svg {
@@ -310,12 +305,6 @@ body.home main {
   width: 100%;
   height: auto;
   overflow: visible;
-}
-
-.home-caterpillar:focus-visible {
-  outline: 3px solid var(--accent);
-  outline-offset: 6px;
-  border-radius: 16px;
 }
 
 /* Each circle bobs up and down a moment after the one in front of it, so a
@@ -331,11 +320,6 @@ body.home main {
   animation: antennae 2.2s ease-in-out infinite;
 }
 
-/* A little hop when she's fed. */
-.home-caterpillar.fed svg {
-  animation: fed 0.35s ease-out;
-}
-
 @keyframes crawl {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-5px); }
@@ -346,15 +330,9 @@ body.home main {
   50% { transform: rotate(4deg); }
 }
 
-@keyframes fed {
-  0% { transform: scale(1); }
-  40% { transform: scale(1.06); }
-  100% { transform: scale(1); }
-}
-
 .logo {
   margin: 1.6rem 0 0.4rem;
-  font-size: clamp(3rem, 13vw, 5.2rem);
+  font-size: clamp(2.4rem, 13vw, 5.2rem);
   letter-spacing: 0.01em;
 }
 
@@ -423,8 +401,7 @@ body.home main {
 
 @media (prefers-reduced-motion: reduce) {
   .home-caterpillar .seg,
-  .home-caterpillar .antennae,
-  .home-caterpillar.fed svg {
+  .home-caterpillar .antennae {
     animation: none;
   }
 
