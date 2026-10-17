@@ -8,31 +8,28 @@ A browser game about a very hungry caterpillar made of circles. Every dot she ea
 
 - **Move** with the arrow keys. She only moves while you're steering her, and turns sharply enough to U-turn without running into herself. On a touch screen, drag anywhere on the grass like a trackpad: she moves the way your finger slides, so your finger never hides her.
 - **Eat the colored dots** to grow. She starts with one purple circle behind her head. Each one adds a circle to the end of her body in its color, and a new dot appears somewhere else a moment later.
-- **Don't bump into rocks, mushrooms or her own body.** Any of those ends the level. The edges of the garden are safe: she just stops there, and you can slide her along them.
+- **Don't bump into rocks, mushrooms or her own body.** Any of those ends the game, and you start over from level 1. The edges of the garden are safe: she just stops there, and you can slide her along them.
 
 ### Levels
 
-There are 10 levels. Level 1 has 3 obstacles and you play until she's 20 circles long. Each level after that adds one more obstacle and 5 more circles:
+There are 5 levels, and she keeps every circle she's grown from one level to the next. Each level adds one more obstacle and asks her to grow 10 more circles:
 
 | Level | Obstacles | Grow to |
 |---|---|---|
 | 1 | 3 | 20 circles |
-| 2 | 4 | 25 circles |
-| 3 | 5 | 30 circles |
-| 4 | 6 | 35 circles |
-| 5 | 7 | 40 circles |
-| 6 | 8 | 45 circles |
-| 7 | 9 | 50 circles |
-| 8 | 10 | 55 circles |
-| 9 | 11 | 60 circles |
-| 10 | 12 | 65 circles |
+| 2 | 4 | 30 circles |
+| 3 | 5 | 40 circles |
+| 4 | 6 | 50 circles |
+| 5 | 7 | 60 circles |
+
+At the start of a level her circles follow her out one by one as she crawls, so she isn't stuck stretched across the garden.
 
 At the end of every level, a pop-up tells you how it went:
 
-- **Level complete:** **Play level 2** (and so on) takes you to the next level. After level 10, **Play again** goes back to level 1.
-- **Game over:** it says what she ran into, and **Try level 3 again** (or whichever level you're on) starts it over. Past level 1 there's also **Start over**, which goes back to level 1.
+- **Level complete:** **Play level 2** (and so on) takes you to the next level, with all her circles. After level 5, **Play again** goes back to level 1.
+- **Game over:** it says what she ran into, and **Start over** goes back to level 1 with just 2 circles. There's no trying a level again.
 
-**Restart level**, under the garden, starts the level you're on over at any time. The levels are set in `LEVELS` in `public/game/config.js`.
+**Start over**, under the garden, also goes back to level 1 at any time. The levels are set in `LEVELS` in `public/game/config.js`.
 
 The directions under the garden match your device: the arrow keys on a computer, dragging on a phone or tablet. On a device with both, like a touchscreen laptop, they switch to whichever you use.
 

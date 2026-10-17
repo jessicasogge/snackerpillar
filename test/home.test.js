@@ -71,7 +71,7 @@ describe('the home page', () => {
 
   it('describes the game under the Start button', () => {
     expect(document.querySelector('.about').textContent.replace(/\s+/g, ' ').trim()).toBe(
-      'Guide a hungry caterpillar through 10 garden levels. Eat dots to grow a colorful tail, and dodge rocks, mushrooms and yourself!',
+      'Guide a hungry caterpillar through 5 garden levels. Eat dots to grow a colorful tail, and dodge rocks, mushrooms and yourself!',
     );
   });
 

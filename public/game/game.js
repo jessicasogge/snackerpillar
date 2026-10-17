@@ -4,17 +4,18 @@ import { keepInField, newSnack, placeObstacles } from './field.js';
 import { steer } from './steer.js';
 import { extendTrail, trimTrail } from './trail.js';
 
-// A fresh game of a level (1 to 10): her head in the middle, facing up, with
-// one circle behind it, and that level's obstacles and the dots scattered
-// around her.
-export function newGame({ halfH, level = 1, rand = Math.random }) {
+// A level (1 to 5): her head in the middle, facing up, with that level's
+// obstacles and the dots scattered around her. On level 1 she has one
+// purple circle behind her head; after that, `hues` are the circles she
+// grew on the levels before, tail last, which follow her out as she crawls.
+export function newGame({ halfH, level = 1, hues = [START_HUE], rand = Math.random }) {
   const { obstacles, goal } = LEVELS[level - 1];
   const state = {
     level,
     goal, // how many circles long she has to grow to finish the level
     head: { x: 0, y: 0, dir: -Math.PI / 2 },
     trail: [{ x: 0, y: 0 }],
-    body: [{ hue: START_HUE, born: -1 }], // { hue, born }, from just behind the head to the tail
+    body: hues.map((hue) => ({ hue, born: -1 })), // { hue, born }, from just behind the head to the tail
     snacks: [],
     obstacles: placeObstacles(halfH, obstacles, rand),
     respawns: [], // when each eaten dot comes back, in game seconds

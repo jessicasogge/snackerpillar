@@ -118,6 +118,13 @@ describe('draw', () => {
     expect(scales(a).length).toBeGreaterThan(0);
   });
 
+  it("doesn't draw circles that haven't followed her out yet", () => {
+    const circles = (st) => drawn(st).calls.filter((c) => c[0] === 'arc').length;
+    const short = { ...state, body: state.body.map((c) => ({ ...c, born: -10 })), trail: [{ x: 0, y: 0 }, { x: 0, y: 0.2 }] };
+    const longBody = { ...short, body: [...short.body, ...Array.from({ length: 20 }, () => ({ hue: 0, born: -10 }))] };
+    expect(circles(longBody)).toBe(circles(short));
+  });
+
   it('draws nothing before the canvas has a size', () => {
     const { canvas, renderer } = setup({ width: 0, height: 0 });
     renderer.resize(1);

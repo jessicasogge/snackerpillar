@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { CELL_R, LEVELS, RESPAWN_SECONDS, START_HUE } from '../public/game/config.js';
+import { CELL_R, LEVELS, RESPAWN_SECONDS, SPACING, START_HUE } from '../public/game/config.js';
 import { seeded } from '../public/game/draw.js';
 import { hasNextLevel, length, newGame, step } from '../public/game/game.js';
+import { trailLength } from '../public/game/trail.js';
 
 const HALF_H = 0.75;
 const idle = () => ({ keys: new Set(), drag: { x: 0, y: 0 }, halfH: HALF_H });
@@ -50,31 +51,26 @@ describe('a new game', () => {
 describe('levels', () => {
   it.each([
     [1, 3, 20],
-    [2, 4, 25],
-    [3, 5, 30],
-    [4, 6, 35],
-    [5, 7, 40],
-    [6, 8, 45],
-    [7, 9, 50],
-    [8, 10, 55],
-    [9, 11, 60],
-    [10, 12, 65],
+    [2, 4, 30],
+    [3, 5, 40],
+    [4, 6, 50],
+    [5, 7, 60],
   ])('level %i has %i obstacles and is played to %i circles', (level, obstacles, goal) => {
     const state = newGame({ halfH: HALF_H, level, rand: seeded(level) });
     expect(state.obstacles).toHaveLength(obstacles);
     expect(state.goal).toBe(goal);
   });
 
-  it('has ten levels, with a next one after every level but the last', () => {
-    expect(LEVELS).toHaveLength(10);
-    for (let level = 1; level <= 9; level++) expect(hasNextLevel(newGame({ halfH: HALF_H, level }))).toBe(true);
-    expect(hasNextLevel(newGame({ halfH: HALF_H, level: 10 }))).toBe(false);
+  it('has five levels, with a next one after every level but the last', () => {
+    expect(LEVELS).toHaveLength(5);
+    for (let level = 1; level <= 4; level++) expect(hasNextLevel(newGame({ halfH: HALF_H, level }))).toBe(true);
+    expect(hasNextLevel(newGame({ halfH: HALF_H, level: 5 }))).toBe(false);
   });
 
   it('always fits every obstacle, even on the most crowded level, on a wide or a square field', () => {
     for (const halfH of [0.75, 1]) {
       for (let seed = 1; seed <= 200; seed++) {
-        expect(newGame({ halfH, level: 10, rand: seeded(seed) }).obstacles).toHaveLength(12);
+        expect(newGame({ halfH, level: 5, rand: seeded(seed) }).obstacles).toHaveLength(7);
       }
     }
   });
@@ -111,6 +107,38 @@ describe('levels', () => {
     const before = JSON.stringify(state);
     expect(step(state, { ...idle(), dt: 0.05 })).toEqual([]);
     expect(JSON.stringify(state)).toBe(before);
+  });
+});
+
+describe('carrying her circles to the next level', () => {
+  const hues = Array.from({ length: 19 }, (_, i) => i * 15);
+
+  it('starts the level with the circles she grew before, in the same colors', () => {
+    const state = newGame({ halfH: HALF_H, level: 2, hues, rand: seeded(6) });
+    expect(length(state)).toBe(20);
+    expect(state.body.map((c) => c.hue)).toEqual(hues);
+    expect(state.goal).toBe(30);
+  });
+
+  it("can't bump into circles that haven't followed her out yet", () => {
+    const state = newGame({ halfH: HALF_H, level: 2, hues, rand: seeded(6) });
+    state.obstacles = [];
+    state.snacks = [];
+    // Crawl a little way up and then straight back down over where she started.
+    for (let i = 0; i < 6; i++) step(state, { ...idle(), keys: new Set(['up']), dt: 0.05 });
+    expect(state.over).toBeNull();
+    expect(trailLength(state.trail)).toBeLessThan(19 * SPACING);
+  });
+
+  it('lets them follow her out one by one as she crawls', () => {
+    const state = newGame({ halfH: HALF_H, level: 2, hues, rand: seeded(6) });
+    state.obstacles = [];
+    state.snacks = [];
+    const out = () => state.body.filter((_, i) => (i + 1) * SPACING <= trailLength(state.trail) + 1e-9).length;
+    const before = out();
+    for (let i = 0; i < 10; i++) step(state, { ...idle(), keys: new Set(['left']), dt: 0.05 });
+    expect(out()).toBeGreaterThan(before);
+    expect(state.over).toBeNull();
   });
 });
 
@@ -187,7 +215,7 @@ describe('game over', () => {
   });
 
   it('ends when she crawls into her own body', () => {
-    // Level 3, so her 13 circles aren't already long enough to finish it (30).
+    // Level 3, so her 13 circles aren't already long enough to finish it (40).
     const state = newGame({ halfH: HALF_H, level: 3, rand: seeded(2) });
     state.obstacles = [];
     state.snacks = [];
