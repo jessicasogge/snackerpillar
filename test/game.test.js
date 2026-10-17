@@ -57,22 +57,23 @@ describe('levels', () => {
     [4, 6, 80],
     [5, 7, 100],
     [6, 8, 120],
+    [7, 9, 140],
   ])('level %i has %i obstacles and is played to %i circles', (level, obstacles, goal) => {
     const state = newGame({ halfH: HALF_H, level, rand: seeded(level) });
     expect(state.obstacles).toHaveLength(obstacles);
     expect(state.goal).toBe(goal);
   });
 
-  it('has six levels, with a next one after every level but the last', () => {
-    expect(LEVELS).toHaveLength(6);
-    for (let level = 1; level <= 5; level++) expect(hasNextLevel(newGame({ halfH: HALF_H, level }))).toBe(true);
-    expect(hasNextLevel(newGame({ halfH: HALF_H, level: 6 }))).toBe(false);
+  it('has seven levels, with a next one after every level but the last', () => {
+    expect(LEVELS).toHaveLength(7);
+    for (let level = 1; level <= 6; level++) expect(hasNextLevel(newGame({ halfH: HALF_H, level }))).toBe(true);
+    expect(hasNextLevel(newGame({ halfH: HALF_H, level: 7 }))).toBe(false);
   });
 
   it('always fits every obstacle, even on the most crowded level, on a wide or a square field', () => {
     for (const halfH of [0.75, 1]) {
       for (let seed = 1; seed <= 200; seed++) {
-        expect(newGame({ halfH, level: 6, rand: seeded(seed) }).obstacles).toHaveLength(8);
+        expect(newGame({ halfH, level: 7, rand: seeded(seed) }).obstacles).toHaveLength(9);
       }
     }
   });

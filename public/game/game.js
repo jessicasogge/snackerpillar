@@ -4,7 +4,7 @@ import { keepInField, newSnack, placeObstacles } from './field.js';
 import { steer } from './steer.js';
 import { extendTrail, pointAlong, trimTrail } from './trail.js';
 
-// A level (1 to 6), with that level's obstacles and the dots scattered
+// A level (1 to 7), with that level's obstacles and the dots scattered
 // around her. On level 1 she's in the middle facing up, with one purple
 // circle behind her head. On later levels, `from` is the level she just
 // finished, and everything stays where it was: she starts in the same spot,
