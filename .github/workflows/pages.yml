@@ -1,7 +1,3 @@
-# Publish the game to GitHub Pages whenever something lands on main.
-# The game is just the files in public/ (HTML, CSS and JavaScript), so Pages
-# can serve it with no server. The tests run first; if they fail, nothing is
-# published.
 name: Deploy to GitHub Pages
 
 on:
