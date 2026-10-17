@@ -2,6 +2,8 @@
 
 A browser game about a very hungry caterpillar made of circles. Every dot she eats adds a new circle to her back, in that dot's color. Grow as long as you can, and don't bump into anything!
 
+**[▶ Play Snackerpillar](https://jessicasogge.github.io/snackerpillar/)**: works on computers, phones and tablets.
+
 ## How to play
 
 - **Move** with the arrow keys. She only moves while you're steering her, and turns sharply enough to U-turn without running into herself. On a touch screen, drag anywhere on the grass like a trackpad: she moves the way your finger slides, so your finger never hides her.
@@ -70,5 +72,11 @@ The server (`src/index.ts`) is a small Express app that serves the `public/` fol
 | `main.js` | Connecting it all to the page: input, the animation loop, the level and length counter, and the end-of-level pop-up |
 
 Tests live in `test/` and run with [Vitest](https://vitest.dev/). GitHub Actions runs them on every push and pull request.
+
+## Publishing
+
+Every push to `main` publishes the game to [GitHub Pages](https://jessicasogge.github.io/snackerpillar/) (`.github/workflows/pages.yml`). The tests and typecheck run first, and if they fail nothing is published. Pages serves the `public/` folder as is, with no server. You can also rerun it by hand from the Actions tab.
+
+The first time, turn Pages on in the repo's **Settings → Pages** and set **Source** to **GitHub Actions**.
 
 The Fredoka and Nunito fonts are included under the SIL Open Font License (`public/fonts/*-OFL.txt`).
