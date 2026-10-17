@@ -22,7 +22,7 @@ There are 5 levels, and she keeps every circle she's grown from one level to the
 | 4 | 6 | 50 circles |
 | 5 | 7 | 60 circles |
 
-Each new level starts with her exactly where she finished the last one, facing the same way, with all her circles showing. The new level's rocks and mushrooms are placed clear of her body and of the way ahead of her face.
+Each new level picks up exactly where the last one ended: she's in the same spot, facing the same way, with all her circles showing, and the rocks, mushrooms and dots stay where they were. One more obstacle is added, clear of her body, the way ahead of her face, and the dots.
 
 At the end of every level, a pop-up tells you how it went:
 

@@ -14,14 +14,16 @@ export function keepInField(head, halfH) {
 // starts wherever she finished the last one, so `her` gives the spots of her
 // head and every circle (her.points) and which way she's facing (her.head):
 // they're kept clear of her whole body and of the way ahead of her face.
-// Later levels crowd the field, so if they don't all fit it starts over, and
-// then leaves a little less room between them, rather than leaving any out.
-export function placeObstacles(halfH, count, rand = Math.random, her = null) {
+// `existing` are obstacles already on the grass (from the level before),
+// which stay where they are; only the rest are placed. If they don't all fit
+// it starts over, and then leaves a little less room between them, rather
+// than leaving any out.
+export function placeObstacles(halfH, count, rand = Math.random, her = null, existing = []) {
   const clearOfHer = her ? (x, y, r) => clearOfBody(her, x, y, r) : clearOfStart;
   let best = [];
   for (const gap of [0.22, 0.18, 0.14, 0.1]) {
     for (let attempt = 0; attempt < 15; attempt++) {
-      const placed = tryPlacing(halfH, count, gap, rand, clearOfHer);
+      const placed = tryPlacing(halfH, count, gap, rand, clearOfHer, existing);
       if (placed.length === count) return placed;
       if (placed.length > best.length) best = placed;
     }
@@ -33,9 +35,11 @@ export function placeObstacles(halfH, count, rand = Math.random, her = null) {
 const clearOfStart = (x, y, r) => Math.hypot(x, y) > 0.42 + r && !(Math.abs(x) < 0.15 + r && y > 0);
 
 // Later levels: clear of every circle of her, and of the space ahead of her
-// face, so she doesn't start a level about to bump into something.
-function clearOfBody({ points, head }, x, y, r) {
+// face, so she doesn't start a level about to bump into something; and clear
+// of the dots still on the grass (`dots`), so none ends up under a rock.
+function clearOfBody({ points, head, dots = [] }, x, y, r) {
   if (!points.every((p) => Math.hypot(x - p.x, y - p.y) > r + CELL_R + 0.06)) return false;
+  if (!dots.every((d) => Math.hypot(x - d.x, y - d.y) > r + d.r + 0.05)) return false;
   for (let k = 1; k <= 5; k++) {
     const ax = head.x + Math.cos(head.dir) * k * 0.08;
     const ay = head.y + Math.sin(head.dir) * k * 0.08;
@@ -44,9 +48,9 @@ function clearOfBody({ points, head }, x, y, r) {
   return true;
 }
 
-function tryPlacing(halfH, count, gap, rand, clearOfHer) {
-  const obstacles = [];
-  for (let i = 0; i < count; i++) {
+function tryPlacing(halfH, count, gap, rand, clearOfHer, existing) {
+  const obstacles = existing.map((o) => ({ ...o }));
+  for (let i = obstacles.length; i < count; i++) {
     for (let tries = 0; tries < 80; tries++) {
       const r = 0.055 + rand() * 0.04;
       const x = (rand() * 2 - 1) * (1 - r - 0.05);

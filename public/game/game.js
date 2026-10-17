@@ -7,8 +7,11 @@ import { extendTrail, pointAlong, trimTrail } from './trail.js';
 // A level (1 to 5), with that level's obstacles and the dots scattered
 // around her. On level 1 she's in the middle facing up, with one purple
 // circle behind her head. On later levels, `from` is the level she just
-// finished: she starts exactly where she was, facing the same way, with all
-// her circles in the same places and colors.
+// finished, and everything stays where it was: she starts in the same spot,
+// facing the same way, with all her circles in the same places and colors;
+// the rocks, mushrooms and dots stay put; and one more obstacle is added,
+// clear of her and of everything else. Dots she'd just eaten still come
+// back on their usual timer.
 export function newGame({ halfH, level = 1, from = null, rand = Math.random }) {
   const { obstacles, goal } = LEVELS[level - 1];
   const state = {
@@ -28,8 +31,13 @@ export function newGame({ halfH, level = 1, from = null, rand = Math.random }) {
   // On level 1, a short straight trail below her, so her first circle has
   // somewhere to sit.
   if (!from) for (let i = 1; i <= 12; i++) state.trail.push({ x: 0, y: (i * SPACING) / 6 });
-  state.obstacles = placeObstacles(halfH, obstacles, rand, from ? { points: herPoints(state), head: state.head } : null);
-  for (let i = 0; i < SNACKS; i++) addSnack(state, halfH, rand);
+  if (from) {
+    state.snacks = from.snacks.filter((s) => s.eatenAt === null).map((s) => ({ ...s, born: -1 }));
+    state.respawns = from.respawns.map((t) => t - from.time);
+  }
+  const her = from ? { points: herPoints(state), head: state.head, dots: state.snacks } : null;
+  state.obstacles = placeObstacles(halfH, obstacles, rand, her, from ? from.obstacles : []);
+  if (!from) for (let i = 0; i < SNACKS; i++) addSnack(state, halfH, rand);
   return state;
 }
 

@@ -3,6 +3,7 @@ import { CELL_R, LEVELS, RESPAWN_SECONDS, SPACING, START_HUE } from '../public/g
 import { seeded } from '../public/game/draw.js';
 import { hasNextLevel, herPoints, length, newGame, step } from '../public/game/game.js';
 import { trailLength } from '../public/game/trail.js';
+import { placeObstacles } from '../public/game/field.js';
 
 const HALF_H = 0.75;
 const idle = () => ({ keys: new Set(), drag: { x: 0, y: 0 }, halfH: HALF_H });
@@ -151,6 +152,49 @@ describe('starting the next level', () => {
     const done = finishedLevel1();
     const next = newGame({ halfH: HALF_H, level: 2, from: done, rand: seeded(1) });
     expect(trailLength(next.trail)).toBeGreaterThanOrEqual(next.body.length * SPACING);
+  });
+
+  it('keeps the rocks and mushrooms where they were, and adds one more', () => {
+    const done = finishedLevel1();
+    done.obstacles = placeObstacles(HALF_H, 3, seeded(2), { points: herPoints(done), head: done.head });
+    const next = newGame({ halfH: HALF_H, level: 2, from: done, rand: seeded(1) });
+    expect(next.obstacles).toHaveLength(4);
+    expect(next.obstacles.slice(0, 3)).toEqual(done.obstacles);
+    const added = next.obstacles[3];
+    for (const o of done.obstacles) expect(Math.hypot(added.x - o.x, added.y - o.y)).toBeGreaterThan(added.r + o.r);
+  });
+
+  it('keeps the dots where they were, without popping them in again', () => {
+    const done = finishedLevel1();
+    done.snacks = [
+      { x: 0.7, y: 0.5, r: 0.02, hue: 10, born: 0.5, eatenAt: null },
+      { x: -0.8, y: -0.6, r: 0.016, hue: 200, born: 1, eatenAt: null },
+    ];
+    const next = newGame({ halfH: HALF_H, level: 2, from: done, rand: seeded(1) });
+    expect(next.snacks.map(({ x, y, r, hue }) => ({ x, y, r, hue }))).toEqual(done.snacks.map(({ x, y, r, hue }) => ({ x, y, r, hue })));
+    for (const s of next.snacks) expect(s.born).toBeLessThan(0);
+  });
+
+  it('brings back the dot she just ate on its usual timer', () => {
+    const done = finishedLevel1();
+    done.time = 40;
+    done.snacks = [{ x: 0.7, y: 0.5, r: 0.02, hue: 10, born: 0, eatenAt: 39.9 }];
+    done.respawns = [39.9 + RESPAWN_SECONDS];
+    const next = newGame({ halfH: HALF_H, level: 2, from: done, rand: seeded(1) });
+    expect(next.snacks).toHaveLength(0); // the eaten one is gone
+    for (let t = 0; t < RESPAWN_SECONDS; t += 0.05) step(next, { ...idle(), dt: 0.05 });
+    expect(next.snacks).toHaveLength(1);
+  });
+
+  it("doesn't put the new obstacle on top of a dot", () => {
+    for (let seed = 1; seed <= 30; seed++) {
+      const done = finishedLevel1(seed);
+      done.snacks = Array.from({ length: 12 }, (_, i) => ({ x: -0.9 + (i % 6) * 0.36, y: i < 6 ? -0.6 : 0.6, r: 0.022, hue: 0, born: 0, eatenAt: null }));
+      const next = newGame({ halfH: HALF_H, level: 2, from: done, rand: seeded(seed) });
+      for (const o of next.obstacles) {
+        for (const d of next.snacks) expect(Math.hypot(o.x - d.x, o.y - d.y)).toBeGreaterThan(o.r + d.r);
+      }
+    }
   });
 
   it("doesn't change the level she finished", () => {
