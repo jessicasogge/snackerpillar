@@ -12,7 +12,7 @@ export function obstacleHit(head, obstacles) {
   return obstacles.find((o) => Math.hypot(o.x - head.x, o.y - head.y) < o.r * 0.85 + CELL_R * 0.9) ?? null;
 }
 
-// Whether the head ran into his own body. The circles just behind the head
+// Whether the head ran into her own body. The circles just behind the head
 // (SAFE_NECK of them) don't count, so an ordinary turn is safe.
 export function tailHit(head, trail, bodyLength) {
   for (let i = SAFE_NECK; i < bodyLength; i++) {

@@ -1,7 +1,7 @@
 import { CELL_R, HEAD_HUE, SPACING } from './config.js';
 import { pointAlong } from './trail.js';
 
-// Draws the game on a canvas: the lawn, the dots, the obstacles and him.
+// Draws the game on a canvas: the lawn, the dots, the obstacles and her.
 // `colors` returns the lawn's colors ({ light, shade, blade }), read from the
 // page's theme, so the lawn can be repainted when the theme changes.
 export function makeRenderer(canvas, { colors, reduceMotion = false, makeCanvas = () => document.createElement('canvas') }) {
@@ -173,8 +173,8 @@ export function makeRenderer(canvas, { colors, reduceMotion = false, makeCanvas 
     ctx.restore();
   }
 
-  // His face and antennae. His pupils look where he's going; after a bump,
-  // his eyes are dizzy X's.
+  // Her face and antennae. Her pupils look where she's going; after a bump,
+  // her eyes are dizzy X's.
   function drawFace(head, time, over) {
     const u = px(CELL_R) / 10; // face units: the head's radius is 10
     const lx = Math.cos(head.dir) * u * 0.7;
@@ -259,7 +259,7 @@ const MUSHROOM_SPOTS = [
   [-0.45, 0.3, 0.12], [0.25, -0.55, 0.11], [0.5, 0.35, 0.1],
 ];
 
-// How big a new circle is `age` seconds after he ate the dot: it pops in with
+// How big a new circle is `age` seconds after she ate the dot: it pops in with
 // a little overshoot, then settles at full size.
 export function popSize(age) {
   if (age >= 0.45) return 1;

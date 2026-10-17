@@ -44,7 +44,7 @@ const pointer = (type, x, y, id = 1) => {
 const banner = () => document.getElementById('banner');
 const click = (id) => document.getElementById(id).click();
 
-// Grow him to one circle short of the goal, then feed him the last dot.
+// Grow her to one circle short of the goal, then feed her the last dot.
 function win(game) {
   game.state.obstacles = [];
   game.state.body = Array.from({ length: game.state.goal - 2 }, () => ({ hue: 0, born: -1 }));
@@ -54,7 +54,7 @@ function win(game) {
   vi.advanceTimersByTime(WIN_DELAY_MS);
 }
 
-// Run him into a rock or a mushroom right in front of him.
+// Run her into a rock or a mushroom right in front of her.
 function bump(game, kind = 'rock') {
   game.state.snacks = [];
   game.state.obstacles = [{ x: game.state.head.x, y: game.state.head.y - 0.1, r: 0.07, kind, lumps: [1, 1, 1], turn: 0 }];
@@ -64,7 +64,7 @@ function bump(game, kind = 'rock') {
   vi.advanceTimersByTime(GAME_OVER_DELAY_MS);
 }
 
-// Win levels until he's on `level`.
+// Win levels until she's on `level`.
 function reach(game, level) {
   while (game.state.level < level) {
     win(game);
@@ -95,16 +95,42 @@ describe('the page', () => {
     expect(document.body.textContent).not.toMatch(/very hungry/);
   });
 
-  it('only mentions the arrow keys and dragging in the hint', () => {
-    const hint = document.querySelector('.hint').textContent;
-    expect(hint).toMatch(/arrow keys/);
-    expect(hint).toMatch(/10 levels/);
-    expect(hint).not.toMatch(/WASD|\bW\b/);
+  it('has keyboard and touch directions in the hint, for the stylesheet to pick between', () => {
+    const hint = document.querySelector('.hint');
+    expect(hint.querySelector('.for-keys').textContent).toBe('Use the arrow keys to move.');
+    expect(hint.querySelector('.for-touch').textContent).toMatch(/^Drag anywhere on the grass/);
+    expect(hint.querySelector('.for-keys').textContent).not.toMatch(/touch|drag/i);
+    expect(hint.querySelector('.for-touch').textContent).not.toMatch(/arrow|key/i);
+    expect(hint.textContent).toMatch(/10 levels/);
+    expect(hint.textContent).not.toMatch(/WASD|\bW\b/);
+  });
+
+  it('calls the caterpillar she and her, never he, him or his', () => {
+    const game = startGame();
+    const said = [document.body.textContent];
+    for (const kind of ['rock', 'mushroom']) {
+      bump(game, kind);
+      said.push(text('banner-message'));
+      click('play-again');
+    }
+    win(game);
+    said.push(text('banner-message'));
+    const all = said.join(' ');
+    expect(all).toMatch(/\bher\b/);
+    expect(all).toMatch(/\bShe\b/);
+    expect(all).not.toMatch(/\b(he|him|his|himself)\b/i);
+  });
+
+  it('marks the page with the directions to show once the game starts', () => {
+    startGame();
+    expect(document.documentElement.classList.contains('input-keys')).toBe(true);
+    key('keydown', 'ArrowUp');
+    expect(document.documentElement.classList.contains('input-keys')).toBe(true);
   });
 });
 
 describe('the length counter', () => {
-  it('counts each dot he eats', () => {
+  it('counts each dot she eats', () => {
     const game = startGame();
     game.state.obstacles = [];
     game.state.snacks = [{ x: 0, y: -0.06, r: 0.02, hue: 50, born: 0, eatenAt: null }];
@@ -120,7 +146,7 @@ describe('winning a level', () => {
     win(game);
     expect(banner().hidden).toBe(false);
     expect(text('banner-title')).toBe('Level 1 complete!');
-    expect(text('banner-message')).toBe('He grew to 15 circles long!');
+    expect(text('banner-message')).toBe('She grew to 15 circles long!');
     expect(text('play-again')).toBe('Play level 2');
     expect(document.getElementById('start-over').hidden).toBe(true);
     expect(document.activeElement).toBe(document.getElementById('play-again'));
@@ -170,17 +196,17 @@ describe('winning a level', () => {
 });
 
 describe('game over', () => {
-  it('shows a pop-up saying what he bumped into, after a moment to see it', () => {
+  it('shows a pop-up saying what she bumped into, after a moment to see it', () => {
     const game = startGame();
     game.state.snacks = [];
     game.state.obstacles = [{ x: 0, y: -0.1, r: 0.07, kind: 'mushroom' }];
     game.keys.add('up');
     game.tick(0.05);
-    expect(banner().hidden).toBe(true); // his eyes go dizzy first
+    expect(banner().hidden).toBe(true); // her eyes go dizzy first
     vi.advanceTimersByTime(GAME_OVER_DELAY_MS);
     expect(banner().hidden).toBe(false);
     expect(text('banner-title')).toBe('Game over');
-    expect(text('banner-message')).toBe('Bonk! He ran into a mushroom.');
+    expect(text('banner-message')).toBe('Bonk! She ran into a mushroom.');
     expect(text('play-again')).toBe('Try level 1 again');
   });
 
@@ -211,19 +237,19 @@ describe('game over', () => {
     expect(text('level')).toBe('Level 1');
   });
 
-  it('says when he ran into his own tail', () => {
+  it('says when she ran into her own tail', () => {
     const game = startGame();
     game.state.snacks = [];
     game.state.obstacles = [];
     game.state.over = null;
     game.tick(0.05);
-    // Make the next step a tail bump: his trail runs down and back up to his
-    // head, so the far end of his 9-circle body sits right on it.
+    // Make the next step a tail bump: her trail runs down and back up to her
+    // head, so the far end of her 9-circle body sits right on it.
     game.state.body = Array.from({ length: 8 }, () => ({ hue: 0, born: -1 }));
     game.state.trail = Array.from({ length: 60 }, (_, i) => ({ x: game.state.head.x, y: game.state.head.y + (i < 30 ? i : 60 - i) * 0.01 }));
     game.tick(0.01);
     vi.advanceTimersByTime(GAME_OVER_DELAY_MS);
-    expect(text('banner-message')).toBe('Bonk! He ran into his own tail.');
+    expect(text('banner-message')).toBe('Bonk! She ran into her own tail.');
   });
 
   it("doesn't remember a best score", () => {
@@ -235,7 +261,7 @@ describe('game over', () => {
 });
 
 describe('Restart level', () => {
-  it('starts the level he is on over', () => {
+  it('starts the level she is on over', () => {
     const game = startGame();
     reach(game, 2);
     game.state.body.push({ hue: 0, born: 0 });
@@ -287,7 +313,7 @@ describe('controls', () => {
     expect(game.keys.size).toBe(0);
   });
 
-  it('moves him like a trackpad when you drag on the grass', () => {
+  it('moves her like a trackpad when you drag on the grass', () => {
     const game = startGame();
     pointer('pointerdown', 100, 100);
     pointer('pointermove', 130, 100);

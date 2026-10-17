@@ -6,7 +6,7 @@ import { hasNextLevel, length, newGame, step } from '../public/game/game.js';
 const HALF_H = 0.75;
 const idle = () => ({ keys: new Set(), drag: { x: 0, y: 0 }, halfH: HALF_H });
 
-// A game with no obstacles and one dot right in front of his face.
+// A game with no obstacles and one dot right in front of her face.
 function gameWithSnackAhead(hue = 120) {
   const state = newGame({ halfH: HALF_H, rand: seeded(1) });
   state.obstacles = [];
@@ -29,7 +29,7 @@ function densify(corners) {
 describe('a new game', () => {
   const state = newGame({ halfH: HALF_H, rand: seeded(5) });
 
-  it('starts in the middle with his head and one purple circle behind it', () => {
+  it('starts in the middle with her head and one purple circle behind it', () => {
     expect(length(state)).toBe(2);
     expect(state.body).toEqual([{ hue: START_HUE, born: expect.any(Number) }]);
     expect(state.head).toMatchObject({ x: 0, y: 0 });
@@ -79,7 +79,7 @@ describe('levels', () => {
     }
   });
 
-  it('finishes the level when he grows to the goal', () => {
+  it('finishes the level when she grows to the goal', () => {
     const state = gameWithSnackAhead();
     state.body = Array.from({ length: state.goal - 2 }, () => ({ hue: 0, born: -1 }));
     step(state, { ...idle(), dt: 0.05 });
@@ -96,7 +96,7 @@ describe('levels', () => {
     expect(state.won).toBe(false);
   });
 
-  it('counts the win even if he reaches the goal right next to a rock', () => {
+  it('counts the win even if she reaches the goal right next to a rock', () => {
     const state = gameWithSnackAhead();
     state.body = Array.from({ length: state.goal - 2 }, () => ({ hue: 0, born: -1 }));
     state.obstacles = [{ x: 0, y: -0.12, r: 0.07, kind: 'rock' }];
@@ -115,7 +115,7 @@ describe('levels', () => {
 });
 
 describe('moving', () => {
-  it("stays put when you aren't steering him", () => {
+  it("stays put when you aren't steering her", () => {
     const state = newGame({ halfH: HALF_H, rand: seeded(4) });
     const before = { ...state.head };
     for (let i = 0; i < 100; i++) step(state, { ...idle(), dt: 0.05 });
@@ -141,7 +141,7 @@ describe('moving', () => {
 });
 
 describe('eating', () => {
-  it('adds a circle in the color of the dot he ate', () => {
+  it('adds a circle in the color of the dot she ate', () => {
     const state = gameWithSnackAhead(200);
     const eaten = step(state, { ...idle(), dt: 0.05 });
     expect(eaten).toEqual([200]);
@@ -149,7 +149,7 @@ describe('eating', () => {
     expect(state.body.at(-1).hue).toBe(200);
   });
 
-  it('adds each new circle to the end of his body', () => {
+  it('adds each new circle to the end of her body', () => {
     const state = gameWithSnackAhead(10);
     step(state, { ...idle(), dt: 0.05 });
     state.snacks.push({ x: state.head.x, y: state.head.y - 0.06, r: 0.02, hue: 300, born: 0, eatenAt: null });
@@ -170,7 +170,7 @@ describe('eating', () => {
 });
 
 describe('game over', () => {
-  it('ends when he runs into a rock', () => {
+  it('ends when she runs into a rock', () => {
     const state = gameWithSnackAhead();
     state.snacks = [];
     state.obstacles = [{ x: 0, y: -0.1, r: 0.07, kind: 'rock' }];
@@ -178,7 +178,7 @@ describe('game over', () => {
     expect(state.over).toBe('rock');
   });
 
-  it('ends when he runs into a mushroom', () => {
+  it('ends when she runs into a mushroom', () => {
     const state = gameWithSnackAhead();
     state.snacks = [];
     state.obstacles = [{ x: 0, y: -0.1, r: 0.07, kind: 'mushroom' }];
@@ -186,14 +186,14 @@ describe('game over', () => {
     expect(state.over).toBe('mushroom');
   });
 
-  it('ends when he crawls into his own body', () => {
-    // Level 3, so his 13 circles aren't already long enough to finish it (25).
+  it('ends when she crawls into her own body', () => {
+    // Level 3, so her 13 circles aren't already long enough to finish it (25).
     const state = newGame({ halfH: HALF_H, level: 3, rand: seeded(2) });
     state.obstacles = [];
     state.snacks = [];
     state.body = Array.from({ length: 12 }, () => ({ hue: 0, born: -1 }));
-    // He has just crawled around a small square loop, so his body curls back
-    // to sit just in front of his head.
+    // She has just crawled around a small square loop, so her body curls back
+    // to sit just in front of her head.
     state.head = { x: 0, y: 0, dir: 0 };
     state.trail = densify([[0, 0], [0, 0.15], [0.15, 0.15], [0.15, 0], [0.04, 0], [-0.3, 0]]);
     for (let i = 0; i < 10 && !state.over; i++) step(state, { ...idle(), keys: new Set(['right']), dt: 0.02 });

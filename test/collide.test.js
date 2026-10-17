@@ -18,7 +18,7 @@ describe('obstacleHit', () => {
   const rock = { x: 0.5, y: 0, r: 0.08, kind: 'rock' };
   const mushroom = { x: -0.5, y: 0, r: 0.08, kind: 'mushroom' };
 
-  it('names the obstacle he ran into', () => {
+  it('names the obstacle she ran into', () => {
     expect(obstacleHit({ x: 0.45, y: 0 }, [rock, mushroom])).toBe(rock);
     expect(obstacleHit({ x: -0.45, y: 0 }, [rock, mushroom])).toBe(mushroom);
   });
@@ -37,16 +37,16 @@ describe('tailHit', () => {
   // A straight trail going right from the head at (0, 0).
   const straight = Array.from({ length: 40 }, (_, i) => ({ x: i * 0.02, y: 0 }));
 
-  it("doesn't count his own body when he's going straight", () => {
+  it("doesn't count her own body when she's going straight", () => {
     expect(tailHit({ x: 0, y: 0 }, straight, 10)).toBe(false);
   });
 
-  it('counts running into a circle further down his body', () => {
+  it('counts running into a circle further down her body', () => {
     const spot = { x: (SAFE_NECK + 3) * SPACING, y: 0.01 };
     expect(tailHit(spot, straight, 10)).toBe(true);
   });
 
-  it('never counts the circles right behind his head', () => {
+  it('never counts the circles right behind her head', () => {
     const spot = { x: SPACING, y: 0 };
     expect(tailHit(spot, straight, SAFE_NECK)).toBe(false);
   });

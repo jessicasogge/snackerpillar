@@ -89,7 +89,7 @@ describe('draw', () => {
     expect(canvas.calls[1][0]).toBe('drawImage');
   });
 
-  it('colors each body circle like the dot he ate', () => {
+  it('colors each body circle like the dot she ate', () => {
     const { canvas, renderer } = setup();
     renderer.resize(1);
     const fills = [];

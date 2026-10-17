@@ -1,16 +1,16 @@
 # Snackerpillar 🐛
 
-A browser game about a very hungry caterpillar made of circles. Every dot he eats adds a new circle to his back, in that dot's color. Grow as long as you can, and don't bump into anything!
+A browser game about a very hungry caterpillar made of circles. Every dot she eats adds a new circle to her back, in that dot's color. Grow as long as you can, and don't bump into anything!
 
 ## How to play
 
-- **Move** with the arrow keys. He only moves while you're steering him, and turns sharply enough to U-turn without running into himself. On a touch screen, drag anywhere on the grass like a trackpad: he moves the way your finger slides, so your finger never hides him.
-- **Eat the colored dots** to grow. He starts with one purple circle behind his head. Each one adds a circle to the end of his body in its color, and a new dot appears somewhere else a moment later.
-- **Don't bump into rocks, mushrooms or his own body.** Any of those ends the level. The edges of the garden are safe: he just stops there, and you can slide him along them.
+- **Move** with the arrow keys. She only moves while you're steering her, and turns sharply enough to U-turn without running into herself. On a touch screen, drag anywhere on the grass like a trackpad: she moves the way your finger slides, so your finger never hides her.
+- **Eat the colored dots** to grow. She starts with one purple circle behind her head. Each one adds a circle to the end of her body in its color, and a new dot appears somewhere else a moment later.
+- **Don't bump into rocks, mushrooms or her own body.** Any of those ends the level. The edges of the garden are safe: she just stops there, and you can slide her along them.
 
 ### Levels
 
-There are 10 levels. Level 1 has 3 obstacles and you play until he's 15 circles long. Each level after that adds one more obstacle and 5 more circles:
+There are 10 levels. Level 1 has 3 obstacles and you play until she's 15 circles long. Each level after that adds one more obstacle and 5 more circles:
 
 | Level | Obstacles | Grow to |
 |---|---|---|
@@ -28,9 +28,11 @@ There are 10 levels. Level 1 has 3 obstacles and you play until he's 15 circles 
 At the end of every level, a pop-up tells you how it went:
 
 - **Level complete:** **Play level 2** (and so on) takes you to the next level. After level 10, **Play again** goes back to level 1.
-- **Game over:** it says what he ran into, and **Try level 3 again** (or whichever level you're on) starts it over. Past level 1 there's also **Start over**, which goes back to level 1.
+- **Game over:** it says what she ran into, and **Try level 3 again** (or whichever level you're on) starts it over. Past level 1 there's also **Start over**, which goes back to level 1.
 
 **Restart level**, under the garden, starts the level you're on over at any time. The levels are set in `LEVELS` in `public/game/config.js`.
+
+The directions under the garden match your device: the arrow keys on a computer, dragging on a phone or tablet. On a device with both, like a touchscreen laptop, they switch to whichever you use.
 
 ## Running it locally
 
@@ -59,11 +61,12 @@ The server (`src/index.ts`) is a small Express app that serves the `public/` fol
 |---|---|
 | `config.js` | Sizes, speeds and counts: how big a circle is, how many dots there are, and each level's obstacles and goal |
 | `game.js` | A level's state, and moving it on one frame at a time: eating, growing, finishing the level, and game over |
-| `steer.js` | How the arrow keys and dragging move him |
-| `trail.js` | The path his head has taken, which his body follows |
-| `field.js` | Keeping him on the field, and placing obstacles and dots |
-| `collide.js` | Whether he's touching a dot, an obstacle or his own body |
-| `draw.js` | Drawing the lawn, dots, rocks, mushrooms and him on the canvas |
+| `steer.js` | How the arrow keys and dragging move her |
+| `trail.js` | The path her head has taken, which her body follows |
+| `field.js` | Keeping her on the field, and placing obstacles and dots |
+| `collide.js` | Whether she's touching a dot, an obstacle or her own body |
+| `draw.js` | Drawing the lawn, dots, rocks, mushrooms and her on the canvas |
+| `input.js` | Showing the directions for the device you're on: arrow keys on a computer, dragging on a phone or tablet |
 | `main.js` | Connecting it all to the page: input, the animation loop, the level and length counter, and the end-of-level pop-up |
 
 Tests live in `test/` and run with [Vitest](https://vitest.dev/). GitHub Actions runs them on every push and pull request.

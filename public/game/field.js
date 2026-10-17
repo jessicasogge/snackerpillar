@@ -1,7 +1,7 @@
 import { CELL_R } from './config.js';
 
-// Keep the head on the field. At an edge he just stops, still facing the
-// way you steered him, and can slide along it; he isn't turned around.
+// Keep the head on the field. At an edge she just stops, still facing the
+// way you steered her, and can slide along it; she isn't turned around.
 export function keepInField(head, halfH) {
   const mx = 1 - CELL_R * 1.2;
   const my = halfH - CELL_R * 1.2;
@@ -9,8 +9,8 @@ export function keepInField(head, halfH) {
   head.y = Math.max(-my, Math.min(my, head.y));
 }
 
-// Rocks and mushrooms, kept away from where he starts (the middle, and the
-// line his body trails along below it) and from each other. Later levels
+// Rocks and mushrooms, kept away from where she starts (the middle, and the
+// line her body trails along below it) and from each other. Later levels
 // crowd the field, so if they don't all fit it starts over, and then leaves
 // a little less room between them, rather than leaving any out.
 export function placeObstacles(halfH, count, rand = Math.random) {
