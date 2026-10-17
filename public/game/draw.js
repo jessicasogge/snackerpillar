@@ -239,10 +239,10 @@ export function makeRenderer(canvas, { colors, reduceMotion = false, makeCanvas 
     ctx.translate(w / 2, h / 2);
     for (const s of state.snacks) drawSnack(s, time);
     for (const o of state.obstacles) drawObstacle(o);
-    // Tail first, so each circle tucks under the one in front of it. At the
-    // start of a level she brings her circles from the last one, and they
-    // follow her out one by one as she crawls: a circle with no trail to sit
-    // on yet isn't drawn (and can't be bumped into; see tailHit).
+    // Tail first, so each circle tucks under the one in front of it. A circle
+    // with no trail to sit on yet isn't drawn (and can't be bumped into; see
+    // tailHit). That only happens for a moment, if ever: when she's just
+    // eaten and hasn't crawled far enough for the new circle's spot.
     const out = trailLength(state.trail);
     for (let i = state.body.length - 1; i >= 0; i--) {
       if ((i + 1) * SPACING > out + 1e-9) continue;

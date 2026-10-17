@@ -22,7 +22,7 @@ There are 5 levels, and she keeps every circle she's grown from one level to the
 | 4 | 6 | 50 circles |
 | 5 | 7 | 60 circles |
 
-At the start of a level her circles follow her out one by one as she crawls, so she isn't stuck stretched across the garden.
+Each new level starts with her exactly where she finished the last one, facing the same way, with all her circles showing. The new level's rocks and mushrooms are placed clear of her body and of the way ahead of her face.
 
 At the end of every level, a pop-up tells you how it went:
 

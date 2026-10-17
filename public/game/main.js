@@ -36,20 +36,20 @@ export function startGame({ doc = document, win = window } = {}) {
   watchInputMode(doc.documentElement, win);
 
   let state;
-  // Where the pop-up's button goes: the next level with the circles she has
-  // now, or back to level 1 with just her first purple circle.
+  // Where the pop-up's button goes: the next level, starting right where she
+  // is now, or back to level 1 with just her first purple circle.
   let next = { level: 1 };
   let bannerTimer = null;
 
   const keys = new Set();
   const drag = { x: 0, y: 0 };
 
-  function play({ level, hues }) {
+  function play({ level, from }) {
     win.clearTimeout(bannerTimer);
     banner.hidden = true;
     keys.clear();
     drag.x = drag.y = 0;
-    state = newGame({ halfH, level, hues });
+    state = newGame({ halfH, level, from });
     showCount();
     canvas.focus({ preventScroll: true });
   }
@@ -72,7 +72,7 @@ export function startGame({ doc = document, win = window } = {}) {
   function showWin() {
     const n = length(state);
     if (hasNextLevel(state)) {
-      next = { level: state.level + 1, hues: state.body.map((c) => c.hue) };
+      next = { level: state.level + 1, from: state };
       showBanner(`Level ${state.level} complete!`, `She's ${n} circles long! Next, grow her to ${LEVELS[state.level].goal}.`, `Play level ${next.level}`);
     } else {
       next = { level: 1 };

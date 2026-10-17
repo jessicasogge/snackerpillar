@@ -2,35 +2,46 @@ import { LEVELS, RESPAWN_SECONDS, SNACKS, SPACING, START_HUE } from './config.js
 import { obstacleHit, tailHit, touchesSnack } from './collide.js';
 import { keepInField, newSnack, placeObstacles } from './field.js';
 import { steer } from './steer.js';
-import { extendTrail, trimTrail } from './trail.js';
+import { extendTrail, pointAlong, trimTrail } from './trail.js';
 
-// A level (1 to 5): her head in the middle, facing up, with that level's
-// obstacles and the dots scattered around her. On level 1 she has one
-// purple circle behind her head; after that, `hues` are the circles she
-// grew on the levels before, tail last, which follow her out as she crawls.
-export function newGame({ halfH, level = 1, hues = [START_HUE], rand = Math.random }) {
+// A level (1 to 5), with that level's obstacles and the dots scattered
+// around her. On level 1 she's in the middle facing up, with one purple
+// circle behind her head. On later levels, `from` is the level she just
+// finished: she starts exactly where she was, facing the same way, with all
+// her circles in the same places and colors.
+export function newGame({ halfH, level = 1, from = null, rand = Math.random }) {
   const { obstacles, goal } = LEVELS[level - 1];
   const state = {
     level,
     goal, // how many circles long she has to grow to finish the level
-    head: { x: 0, y: 0, dir: -Math.PI / 2 },
-    trail: [{ x: 0, y: 0 }],
-    body: hues.map((hue) => ({ hue, born: -1 })), // { hue, born }, from just behind the head to the tail
+    head: from ? { ...from.head } : { x: 0, y: 0, dir: -Math.PI / 2 },
+    trail: from ? from.trail.map((p) => ({ ...p })) : [{ x: 0, y: 0 }],
+    // { hue, born }, from just behind the head to the tail
+    body: from ? from.body.map(({ hue }) => ({ hue, born: -1 })) : [{ hue: START_HUE, born: -1 }],
     snacks: [],
-    obstacles: placeObstacles(halfH, obstacles, rand),
+    obstacles: [],
     respawns: [], // when each eaten dot comes back, in game seconds
     time: 0,
     over: null, // what she ran into, once the game is over
     won: false, // whether she grew long enough to finish the level
   };
-  // A short straight trail below her, so her first circles have somewhere to go.
-  for (let i = 1; i <= 12; i++) state.trail.push({ x: 0, y: (i * SPACING) / 6 });
+  // On level 1, a short straight trail below her, so her first circle has
+  // somewhere to sit.
+  if (!from) for (let i = 1; i <= 12; i++) state.trail.push({ x: 0, y: (i * SPACING) / 6 });
+  state.obstacles = placeObstacles(halfH, obstacles, rand, from ? { points: herPoints(state), head: state.head } : null);
   for (let i = 0; i < SNACKS; i++) addSnack(state, halfH, rand);
   return state;
 }
 
+// Where her head and each of her circles are.
+export function herPoints(state) {
+  const points = [{ x: state.head.x, y: state.head.y }];
+  state.body.forEach((_, i) => points.push(pointAlong(state.trail, (i + 1) * SPACING)));
+  return points;
+}
+
 function addSnack(state, halfH, rand) {
-  const snack = newSnack({ halfH, head: state.head, snacks: state.snacks, obstacles: state.obstacles, time: state.time, rand });
+  const snack = newSnack({ halfH, head: state.head, body: herPoints(state), snacks: state.snacks, obstacles: state.obstacles, time: state.time, rand });
   if (snack) state.snacks.push(snack);
 }
 

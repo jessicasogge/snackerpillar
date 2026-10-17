@@ -14,7 +14,7 @@ export function obstacleHit(head, obstacles) {
 
 // Whether the head ran into her own body. The circles just behind the head
 // (SAFE_NECK of them) don't count, so an ordinary turn is safe, and neither
-// do circles that haven't followed her out yet at the start of a level.
+// does a circle with no trail to sit on yet (see draw.js).
 export function tailHit(head, trail, bodyLength) {
   const out = trailLength(trail);
   for (let i = SAFE_NECK; i < bodyLength; i++) {
