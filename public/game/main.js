@@ -12,14 +12,13 @@ const BUMPED = {
 };
 
 // Wire the game to the page: input, the animation loop, the level and length
-// counter, the Start over button, and the pop-up at the end of each level.
+// counter, and the pop-up at the end of each level.
 // Returns a few handles for tests.
 export function startGame({ doc = document, win = window } = {}) {
   const canvas = doc.getElementById('field');
   const levelEl = doc.getElementById('level');
   const countEl = doc.getElementById('count');
   const unitEl = doc.getElementById('unit');
-  const restartButton = doc.getElementById('restart');
   const banner = doc.getElementById('banner');
   const bannerTitle = doc.getElementById('banner-title');
   const bannerMessage = doc.getElementById('banner-message');
@@ -117,7 +116,6 @@ export function startGame({ doc = document, win = window } = {}) {
   canvas.addEventListener('pointerup', endDrag);
   canvas.addEventListener('pointercancel', endDrag);
 
-  restartButton.addEventListener('click', () => play({ level: 1 }));
   playButton.addEventListener('click', () => play(next));
 
   if (win.ResizeObserver) {
