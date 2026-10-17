@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { extendTrail, pointAlong, trimTrail } from '../public/game/trail.js';
 
 describe('extendTrail', () => {
-  it('adds the head spot to the front once he has moved far enough', () => {
+  it('adds the head spot to the front once she has moved far enough', () => {
     const trail = [{ x: 0, y: 0 }];
     extendTrail(trail, 0.1, 0);
     expect(trail).toEqual([{ x: 0.1, y: 0 }, { x: 0, y: 0 }]);

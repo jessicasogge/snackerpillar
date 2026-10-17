@@ -4,14 +4,14 @@ import { keepInField, newSnack, placeObstacles } from './field.js';
 import { steer } from './steer.js';
 import { extendTrail, trimTrail } from './trail.js';
 
-// A fresh game of a level (1 to 10): his head in the middle, facing up, with
+// A fresh game of a level (1 to 10): her head in the middle, facing up, with
 // one circle behind it, and that level's obstacles and the dots scattered
-// around him.
+// around her.
 export function newGame({ halfH, level = 1, rand = Math.random }) {
   const { obstacles, goal } = LEVELS[level - 1];
   const state = {
     level,
-    goal, // how many circles long he has to grow to finish the level
+    goal, // how many circles long she has to grow to finish the level
     head: { x: 0, y: 0, dir: -Math.PI / 2 },
     trail: [{ x: 0, y: 0 }],
     body: [{ hue: START_HUE, born: -1 }], // { hue, born }, from just behind the head to the tail
@@ -19,10 +19,10 @@ export function newGame({ halfH, level = 1, rand = Math.random }) {
     obstacles: placeObstacles(halfH, obstacles, rand),
     respawns: [], // when each eaten dot comes back, in game seconds
     time: 0,
-    over: null, // what he ran into, once the game is over
-    won: false, // whether he grew long enough to finish the level
+    over: null, // what she ran into, once the game is over
+    won: false, // whether she grew long enough to finish the level
   };
-  // A short straight trail below him, so his first circles have somewhere to go.
+  // A short straight trail below her, so her first circles have somewhere to go.
   for (let i = 1; i <= 12; i++) state.trail.push({ x: 0, y: (i * SPACING) / 6 });
   for (let i = 0; i < SNACKS; i++) addSnack(state, halfH, rand);
   return state;
@@ -39,8 +39,8 @@ export const length = (state) => state.body.length + 1;
 // Whether there's a level after this one.
 export const hasNextLevel = (state) => state.level < LEVELS.length;
 
-// Move the game on by `dt` seconds. Returns the hues of any dots he ate.
-// Once he finishes the level or bumps into something, nothing moves.
+// Move the game on by `dt` seconds. Returns the hues of any dots she ate.
+// Once she finishes the level or bumps into something, nothing moves.
 export function step(state, { dt, keys, drag, halfH, rand = Math.random }) {
   if (state.over || state.won) return [];
   state.time += dt;

@@ -6,34 +6,34 @@ import { seeded } from '../public/game/draw.js';
 const HALF_H = 0.75;
 
 describe('keepInField', () => {
-  it('leaves him alone in the middle of the field', () => {
+  it('leaves her alone in the middle of the field', () => {
     const head = { x: 0.2, y: -0.1, dir: 1 };
     keepInField(head, HALF_H);
     expect(head).toEqual({ x: 0.2, y: -0.1, dir: 1 });
   });
 
-  it("stops him at the right edge without turning him around", () => {
+  it("stops her at the right edge without turning her around", () => {
     const head = { x: 1.2, y: 0, dir: 0 };
     keepInField(head, HALF_H);
     expect(head.x).toBeCloseTo(1 - CELL_R * 1.2);
     expect(head.dir).toBe(0);
   });
 
-  it("stops him at the bottom edge without turning him around", () => {
+  it("stops her at the bottom edge without turning her around", () => {
     const head = { x: 0, y: 2, dir: Math.PI / 2 };
     keepInField(head, HALF_H);
     expect(head.y).toBeCloseTo(HALF_H - CELL_R * 1.2);
     expect(head.dir).toBe(Math.PI / 2);
   });
 
-  it('lets him slide along an edge', () => {
+  it('lets her slide along an edge', () => {
     const head = { x: -1.5, y: 0.3, dir: 2.5 };
     keepInField(head, HALF_H);
     expect(head.x).toBeCloseTo(-(1 - CELL_R * 1.2));
     expect(head.y).toBe(0.3);
   });
 
-  it('holds him in a corner', () => {
+  it('holds her in a corner', () => {
     const head = { x: 3, y: -3, dir: -0.8 };
     keepInField(head, HALF_H);
     expect(head.x).toBeCloseTo(1 - CELL_R * 1.2);
@@ -57,7 +57,7 @@ describe('placeObstacles', () => {
     }
   });
 
-  it('keeps them clear of where he starts', () => {
+  it('keeps them clear of where she starts', () => {
     for (const o of obstacles) {
       expect(Math.hypot(o.x, o.y)).toBeGreaterThan(0.42 + o.r);
       expect(Math.abs(o.x) < 0.15 + o.r && o.y > 0).toBe(false);
@@ -83,7 +83,7 @@ describe('placeObstacles', () => {
   });
 
   it('keeps as many as it could fit when it cannot fit them all', () => {
-    // A field barely taller than the start area: only a few fit beside him.
+    // A field barely taller than the start area: only a few fit beside her.
     const placed = placeObstacles(0.2, 30, seeded(5));
     expect(placed.length).toBeGreaterThan(0);
     expect(placed.length).toBeLessThan(30);

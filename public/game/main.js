@@ -6,9 +6,9 @@ import { watchInputMode } from './input.js';
 const KEYS = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' };
 
 const BUMPED = {
-  rock: 'Bonk! He ran into a rock.',
-  mushroom: 'Bonk! He ran into a mushroom.',
-  tail: 'Bonk! He ran into his own tail.',
+  rock: 'Bonk! She ran into a rock.',
+  mushroom: 'Bonk! She ran into a mushroom.',
+  tail: 'Bonk! She ran into her own tail.',
 };
 
 // Wire the game to the page: input, the animation loop, the level and length
@@ -53,7 +53,7 @@ export function startGame({ doc = document, win = window } = {}) {
     canvas.focus({ preventScroll: true });
   }
 
-  // The level, and how long he is out of how long he needs to be.
+  // The level, and how long she is out of how long she needs to be.
   function showCount() {
     levelEl.textContent = `Level ${state.level}`;
     countEl.textContent = String(length(state));
@@ -72,7 +72,7 @@ export function startGame({ doc = document, win = window } = {}) {
   function showWin() {
     if (hasNextLevel(state)) {
       nextLevel = state.level + 1;
-      showBanner(`Level ${state.level} complete!`, `He grew to ${state.goal} circles long!`, `Play level ${nextLevel}`);
+      showBanner(`Level ${state.level} complete!`, `She grew to ${state.goal} circles long!`, `Play level ${nextLevel}`);
     } else {
       nextLevel = 1;
       showBanner('You won!', `You beat all ${LEVELS.length} levels with a caterpillar ${state.goal} circles long!`, 'Play again');
@@ -95,7 +95,7 @@ export function startGame({ doc = document, win = window } = {}) {
   win.addEventListener('keyup', (e) => keys.delete(KEYS[e.key]));
   win.addEventListener('blur', () => keys.clear());
 
-  // A drag anywhere on the grass moves him like a trackpad.
+  // A drag anywhere on the grass moves her like a trackpad.
   let pointer = null;
   canvas.addEventListener('pointerdown', (e) => {
     pointer = { id: e.pointerId, x: e.clientX, y: e.clientY };

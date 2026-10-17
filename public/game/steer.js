@@ -1,14 +1,14 @@
 import { SPEED } from './config.js';
 
-// How far the head moves this frame, as { vx, vy }, turning him as it goes.
-// A drag moves him with the finger, like a trackpad; arrow keys turn him
-// quickly toward the pressed direction; left alone he stays put.
+// How far the head moves this frame, as { vx, vy }, turning her as it goes.
+// A drag moves her with the finger, like a trackpad; arrow keys turn her
+// quickly toward the pressed direction; left alone she stays put.
 // `keys` holds 'up', 'down', 'left' and 'right'; `drag` is how far the finger
-// has moved since he last caught up, and is used up here.
+// has moved since she last caught up, and is used up here.
 export function steer(head, { keys, drag, dt }) {
   const dragLen = Math.hypot(drag.x, drag.y);
   if (dragLen > 0) {
-    // Capped, so a fling can't teleport him.
+    // Capped, so a fling can't teleport her.
     const k = Math.min(1, (SPEED.drag * dt) / dragLen);
     const vx = drag.x * k;
     const vy = drag.y * k;
