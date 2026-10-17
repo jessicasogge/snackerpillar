@@ -69,6 +69,12 @@ describe('the home page', () => {
     expect(el.innerHTML).toBe(before);
   });
 
+  it('describes the game under the Start button', () => {
+    expect(document.querySelector('.about').textContent.replace(/\s+/g, ' ').trim()).toBe(
+      'Guide a hungry caterpillar through 10 garden levels. Eat dots to grow a colorful tail, and dodge rocks, mushrooms and yourself!',
+    );
+  });
+
   it('has a Start button that goes to the game', () => {
     const start = document.querySelector('.start-btn');
     expect(start.textContent).toBe('Press Start to Play');
