@@ -77,7 +77,7 @@ describe('the page', () => {
     startGame();
     expect(text('level')).toBe('Level 1');
     expect(text('count')).toBe('2');
-    expect(text('unit')).toBe('/ 15 circles');
+    expect(text('unit')).toBe('/ 20 circles');
     expect(banner().hidden).toBe(true);
   });
 
@@ -136,7 +136,7 @@ describe('the length counter', () => {
     game.state.snacks = [{ x: 0, y: -0.06, r: 0.02, hue: 50, born: 0, eatenAt: null }];
     game.tick(0.05);
     expect(text('count')).toBe('3');
-    expect(text('unit')).toBe('/ 15 circles');
+    expect(text('unit')).toBe('/ 20 circles');
   });
 });
 
@@ -146,7 +146,7 @@ describe('winning a level', () => {
     win(game);
     expect(banner().hidden).toBe(false);
     expect(text('banner-title')).toBe('Level 1 complete!');
-    expect(text('banner-message')).toBe('She grew to 15 circles long!');
+    expect(text('banner-message')).toBe('She grew to 20 circles long!');
     expect(text('play-again')).toBe('Play level 2');
     expect(document.getElementById('start-over').hidden).toBe(true);
     expect(document.activeElement).toBe(document.getElementById('play-again'));
@@ -169,16 +169,16 @@ describe('winning a level', () => {
     click('play-again');
     expect(banner().hidden).toBe(true);
     expect(text('level')).toBe('Level 2');
-    expect(text('unit')).toBe('/ 20 circles');
+    expect(text('unit')).toBe('/ 25 circles');
     expect(text('count')).toBe('2');
     expect(game.state.obstacles).toHaveLength(4);
   });
 
-  it('goes all the way up to level 10, played to 60 circles', () => {
+  it('goes all the way up to level 10, played to 65 circles', () => {
     const game = startGame();
     reach(game, 10);
     expect(text('level')).toBe('Level 10');
-    expect(text('unit')).toBe('/ 60 circles');
+    expect(text('unit')).toBe('/ 65 circles');
     expect(game.state.obstacles).toHaveLength(12);
   });
 
@@ -187,11 +187,11 @@ describe('winning a level', () => {
     reach(game, 10);
     win(game);
     expect(text('banner-title')).toBe('You won!');
-    expect(text('banner-message')).toBe('You beat all 10 levels with a caterpillar 60 circles long!');
+    expect(text('banner-message')).toBe('You beat all 10 levels with a caterpillar 65 circles long!');
     expect(text('play-again')).toBe('Play again');
     click('play-again');
     expect(text('level')).toBe('Level 1');
-    expect(text('unit')).toBe('/ 15 circles');
+    expect(text('unit')).toBe('/ 20 circles');
   });
 });
 

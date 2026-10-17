@@ -12,20 +12,20 @@ A browser game about a very hungry caterpillar made of circles. Every dot she ea
 
 ### Levels
 
-There are 10 levels. Level 1 has 3 obstacles and you play until she's 15 circles long. Each level after that adds one more obstacle and 5 more circles:
+There are 10 levels. Level 1 has 3 obstacles and you play until she's 20 circles long. Each level after that adds one more obstacle and 5 more circles:
 
 | Level | Obstacles | Grow to |
 |---|---|---|
-| 1 | 3 | 15 circles |
-| 2 | 4 | 20 circles |
-| 3 | 5 | 25 circles |
-| 4 | 6 | 30 circles |
-| 5 | 7 | 35 circles |
-| 6 | 8 | 40 circles |
-| 7 | 9 | 45 circles |
-| 8 | 10 | 50 circles |
-| 9 | 11 | 55 circles |
-| 10 | 12 | 60 circles |
+| 1 | 3 | 20 circles |
+| 2 | 4 | 25 circles |
+| 3 | 5 | 30 circles |
+| 4 | 6 | 35 circles |
+| 5 | 7 | 40 circles |
+| 6 | 8 | 45 circles |
+| 7 | 9 | 50 circles |
+| 8 | 10 | 55 circles |
+| 9 | 11 | 60 circles |
+| 10 | 12 | 65 circles |
 
 At the end of every level, a pop-up tells you how it went:
 
