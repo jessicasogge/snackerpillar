@@ -12,7 +12,7 @@ A browser game about a very hungry caterpillar made of circles. Every dot she ea
 
 ### Levels
 
-There are 6 levels, and she keeps every circle she's grown from one level to the next. Each level adds one more obstacle and asks her to grow 20 more circles:
+There are 7 levels, and she keeps every circle she's grown from one level to the next. Each level adds one more obstacle and asks her to grow 20 more circles:
 
 | Level | Obstacles | Grow to |
 |---|---|---|
@@ -22,12 +22,13 @@ There are 6 levels, and she keeps every circle she's grown from one level to the
 | 4 | 6 | 80 circles |
 | 5 | 7 | 100 circles |
 | 6 | 8 | 120 circles |
+| 7 | 9 | 140 circles |
 
 Each new level picks up exactly where the last one ended: she's in the same spot, facing the same way, with all her circles showing, and the rocks, mushrooms and dots stay where they were. One more obstacle is added, clear of her body, the way ahead of her face, and the dots.
 
 At the end of every level, a pop-up tells you how it went:
 
-- **Level complete:** **Play level 2** (and so on) takes you to the next level, with all her circles. After level 6, **Play again** goes back to level 1.
+- **Level complete:** **Play level 2** (and so on) takes you to the next level, with all her circles. After level 7, **Play again** goes back to level 1.
 - **Game over:** it says what she ran into, and **Start over** goes back to level 1 with just 2 circles. There's no trying a level again.
 
 The levels are set in `LEVELS` in `public/game/config.js`.
@@ -73,6 +74,10 @@ The game itself runs entirely in the browser, as plain JavaScript modules in `pu
 | `main.js` | Connecting it all to the page: input, the animation loop, the level and length counter, and the end-of-level pop-up |
 
 Tests live in `test/` and run with [Vitest](https://vitest.dev/). GitHub Actions runs them on every push and pull request.
+
+## Visit counts
+
+Both pages load [GoatCounter](https://www.goatcounter.com/) to count visits, sharing PetriPals' site at https://petripals.goatcounter.com. Snackerpillar's visits show up there under paths starting with `/snackerpillar/`. It uses no cookies and collects nothing personal.
 
 ## Publishing
 

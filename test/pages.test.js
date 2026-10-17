@@ -53,3 +53,12 @@ describe('the picture shown when the link is shared', () => {
     expect(meta('twitter:card')).toBe('summary_large_image');
   });
 });
+
+describe('counting visits on GoatCounter', () => {
+  it.each(['index.html', 'play.html'])('loads the GoatCounter script on %s, counting on petripals.goatcounter.com with PetriPals', (page) => {
+    const html = read(page);
+    const tag = html.match(/<script data-goatcounter="([^"]+)"\s+async src="([^"]+)"><\/script>/);
+    expect(tag?.[1]).toBe('https://petripals.goatcounter.com/count');
+    expect(tag?.[2]).toBe('https://gc.zgo.at/count.js');
+  });
+});
