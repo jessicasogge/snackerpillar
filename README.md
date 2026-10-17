@@ -57,7 +57,7 @@ Then open <http://localhost:3007>. To use another port, set `PORT`, like `PORT=4
 
 ## How it's put together
 
-The server (`src/index.ts`) is a small Express app that serves the `public/` folder and a `/health` check. `public/index.html` is the home page, with a caterpillar you can tap to feed and the **Press Start to Play** button. `public/play.html` is the game. `public/social-preview.png` is the picture shown when the link is shared in messages or on social media.
+The server (`src/index.ts`) is a small Express app that serves the `public/` folder and a `/health` check. `public/index.html` is the home page, with a caterpillar you can tap to feed, the **Press Start to Play** button, and a link to the [Tiny Game Arcade](https://jessicasogge.github.io/tiny-game-arcade/). `public/play.html` is the game. `public/social-preview.png` is the picture shown when the link is shared in messages or on social media.
 
 The game itself runs entirely in the browser, as plain JavaScript modules in `public/game/`:
 

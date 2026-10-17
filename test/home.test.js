@@ -83,12 +83,19 @@ describe('the home page', () => {
     expect(start.getAttribute('href')).toBe('play.html');
   });
 
+  it("doesn't put a patch of grass under her", () => {
+    expect(document.querySelector('.lawn')).toBeNull();
+  });
+
   it('tells screen readers what tapping her does', () => {
     expect(document.querySelector('.home-caterpillar').getAttribute('aria-label')).toBe('Feed the caterpillar a dot');
   });
 
-  it('links to PetriPals and is signed', () => {
-    expect(document.querySelector('.sister-game a').href).toBe('https://jessicasogge.github.io/petripals/');
+  it('says it is a Tiny Game Arcade game, with a link to the arcade, and is signed', () => {
+    const line = document.querySelector('.sister-game');
+    expect(line.textContent.replace(/\s+/g, ' ').trim()).toBe('A Tiny Game Arcade game.');
+    expect(line.querySelector('a').href).toBe('https://jessicasogge.github.io/tiny-game-arcade/');
+    expect(document.body.textContent).not.toMatch(/From the maker/);
     expect(document.querySelector('.signature').textContent).toBe('jsogge 2026');
   });
 });
