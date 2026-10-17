@@ -12,15 +12,15 @@ A browser game about a very hungry caterpillar made of circles. Every dot she ea
 
 ### Levels
 
-There are 5 levels, and she keeps every circle she's grown from one level to the next. Each level adds one more obstacle and asks her to grow 10 more circles:
+There are 5 levels, and she keeps every circle she's grown from one level to the next. Each level adds one more obstacle and asks her to grow 20 more circles:
 
 | Level | Obstacles | Grow to |
 |---|---|---|
 | 1 | 3 | 20 circles |
-| 2 | 4 | 30 circles |
-| 3 | 5 | 40 circles |
-| 4 | 6 | 50 circles |
-| 5 | 7 | 60 circles |
+| 2 | 4 | 40 circles |
+| 3 | 5 | 60 circles |
+| 4 | 6 | 80 circles |
+| 5 | 7 | 100 circles |
 
 Each new level picks up exactly where the last one ended: she's in the same spot, facing the same way, with all her circles showing, and the rocks, mushrooms and dots stay where they were. One more obstacle is added, clear of her body, the way ahead of her face, and the dots.
 

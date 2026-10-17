@@ -52,10 +52,10 @@ describe('a new game', () => {
 describe('levels', () => {
   it.each([
     [1, 3, 20],
-    [2, 4, 30],
-    [3, 5, 40],
-    [4, 6, 50],
-    [5, 7, 60],
+    [2, 4, 40],
+    [3, 5, 60],
+    [4, 6, 80],
+    [5, 7, 100],
   ])('level %i has %i obstacles and is played to %i circles', (level, obstacles, goal) => {
     const state = newGame({ halfH: HALF_H, level, rand: seeded(level) });
     expect(state.obstacles).toHaveLength(obstacles);
@@ -145,7 +145,7 @@ describe('starting the next level', () => {
     expect(length(next)).toBe(20);
     expect(next.body.map((c) => c.hue)).toEqual(done.body.map((c) => c.hue));
     expect(herPoints(next)).toEqual(herPoints(done));
-    expect(next.goal).toBe(30);
+    expect(next.goal).toBe(40);
   });
 
   it('shows every circle from the start', () => {
@@ -301,7 +301,7 @@ describe('game over', () => {
   });
 
   it('ends when she crawls into her own body', () => {
-    // Level 3, so her 13 circles aren't already long enough to finish it (40).
+    // Level 3, so her 13 circles aren't already long enough to finish it (60).
     const state = newGame({ halfH: HALF_H, level: 3, rand: seeded(2) });
     state.obstacles = [];
     state.snacks = [];
