@@ -1,6 +1,7 @@
 import { GAME_OVER_DELAY_MS, LEVELS, WIN_DELAY_MS } from './config.js';
 import { hasNextLevel, length, newGame, step } from './game.js';
 import { makeRenderer } from './draw.js';
+import { watchInputMode } from './input.js';
 
 const KEYS = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' };
 
@@ -33,6 +34,7 @@ export function startGame({ doc = document, win = window } = {}) {
   };
   const renderer = makeRenderer(canvas, { colors, reduceMotion, makeCanvas: () => doc.createElement('canvas') });
   let halfH = renderer.resize(win.devicePixelRatio);
+  watchInputMode(doc.documentElement, win);
 
   let state;
   let nextLevel = 1; // where the pop-up's main button goes

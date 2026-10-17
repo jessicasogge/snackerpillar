@@ -32,6 +32,8 @@ At the end of every level, a pop-up tells you how it went:
 
 **Restart level**, under the garden, starts the level you're on over at any time. The levels are set in `LEVELS` in `public/game/config.js`.
 
+The directions under the garden match your device: the arrow keys on a computer, dragging on a phone or tablet. On a device with both, like a touchscreen laptop, they switch to whichever you use.
+
 ## Running it locally
 
 You need [Node.js](https://nodejs.org/) 22 or newer.
@@ -64,6 +66,7 @@ The server (`src/index.ts`) is a small Express app that serves the `public/` fol
 | `field.js` | Keeping him on the field, and placing obstacles and dots |
 | `collide.js` | Whether he's touching a dot, an obstacle or his own body |
 | `draw.js` | Drawing the lawn, dots, rocks, mushrooms and him on the canvas |
+| `input.js` | Showing the directions for the device you're on: arrow keys on a computer, dragging on a phone or tablet |
 | `main.js` | Connecting it all to the page: input, the animation loop, the level and length counter, and the end-of-level pop-up |
 
 Tests live in `test/` and run with [Vitest](https://vitest.dev/). GitHub Actions runs them on every push and pull request.

@@ -95,11 +95,21 @@ describe('the page', () => {
     expect(document.body.textContent).not.toMatch(/very hungry/);
   });
 
-  it('only mentions the arrow keys and dragging in the hint', () => {
-    const hint = document.querySelector('.hint').textContent;
-    expect(hint).toMatch(/arrow keys/);
-    expect(hint).toMatch(/10 levels/);
-    expect(hint).not.toMatch(/WASD|\bW\b/);
+  it('has keyboard and touch directions in the hint, for the stylesheet to pick between', () => {
+    const hint = document.querySelector('.hint');
+    expect(hint.querySelector('.for-keys').textContent).toBe('Use the arrow keys to move.');
+    expect(hint.querySelector('.for-touch').textContent).toMatch(/^Drag anywhere on the grass/);
+    expect(hint.querySelector('.for-keys').textContent).not.toMatch(/touch|drag/i);
+    expect(hint.querySelector('.for-touch').textContent).not.toMatch(/arrow|key/i);
+    expect(hint.textContent).toMatch(/10 levels/);
+    expect(hint.textContent).not.toMatch(/WASD|\bW\b/);
+  });
+
+  it('marks the page with the directions to show once the game starts', () => {
+    startGame();
+    expect(document.documentElement.classList.contains('input-keys')).toBe(true);
+    key('keydown', 'ArrowUp');
+    expect(document.documentElement.classList.contains('input-keys')).toBe(true);
   });
 });
 
