@@ -64,11 +64,11 @@ function bump(game, kind = 'rock') {
   vi.advanceTimersByTime(GAME_OVER_DELAY_MS);
 }
 
-// Win levels until she's on `level` (at most 5 tries, so a mistake here
+// Win levels until she's on `level` (at most 6 tries, so a mistake here
 // fails the test rather than looping forever).
 function reach(game, level) {
   for (let tries = 0; game.state.level < level; tries++) {
-    if (tries >= 5) throw new Error(`couldn't reach level ${level}`);
+    if (tries >= 6) throw new Error(`couldn't reach level ${level}`);
     win(game);
     click('play-again');
   }
@@ -103,7 +103,7 @@ describe('the page', () => {
     expect(hint.querySelector('.for-touch').textContent).toMatch(/^Drag anywhere on the grass/);
     expect(hint.querySelector('.for-keys').textContent).not.toMatch(/touch|drag/i);
     expect(hint.querySelector('.for-touch').textContent).not.toMatch(/arrow|key/i);
-    expect(hint.textContent).toMatch(/all 5 levels/);
+    expect(hint.textContent).toMatch(/all 6 levels/);
     expect(hint.textContent).not.toMatch(/WASD|\bW\b/);
   });
 
@@ -189,21 +189,21 @@ describe('winning a level', () => {
     expect(game.state.body.at(-1).hue).toBe(333);
   });
 
-  it('goes up to level 5, played to 100 circles', () => {
+  it('goes up to level 6, played to 120 circles', () => {
     const game = startGame();
-    reach(game, 5);
-    expect(text('level')).toBe('Level 5');
-    expect(text('count')).toBe('80');
-    expect(text('unit')).toBe('/ 100 circles');
-    expect(game.state.obstacles).toHaveLength(7);
+    reach(game, 6);
+    expect(text('level')).toBe('Level 6');
+    expect(text('count')).toBe('100');
+    expect(text('unit')).toBe('/ 120 circles');
+    expect(game.state.obstacles).toHaveLength(8);
   });
 
-  it('celebrates beating level 5, then starts again from level 1 with 2 circles', () => {
+  it('celebrates beating level 6, then starts again from level 1 with 2 circles', () => {
     const game = startGame();
-    reach(game, 5);
+    reach(game, 6);
     win(game);
     expect(text('banner-title')).toBe('You won!');
-    expect(text('banner-message')).toBe('You beat all 5 levels with a caterpillar 100 circles long!');
+    expect(text('banner-message')).toBe('You beat all 6 levels with a caterpillar 120 circles long!');
     expect(text('play-again')).toBe('Play again');
     click('play-again');
     expect(text('level')).toBe('Level 1');
@@ -264,27 +264,10 @@ describe('game over', () => {
   });
 });
 
-describe('Start over', () => {
-  it('goes back to level 1 with 2 circles from any level', () => {
-    const game = startGame();
-    reach(game, 2);
-    expect(text('restart')).toBe('Start over');
-    click('restart');
-    expect(game.state.level).toBe(1);
-    expect(game.state.body).toHaveLength(1);
-    expect(text('count')).toBe('2');
-  });
-
-  it("cancels a pop-up that hasn't come up yet", () => {
-    const game = startGame();
-    game.state.snacks = [];
-    game.state.obstacles = [{ x: 0, y: -0.1, r: 0.07, kind: 'rock', lumps: [1, 1, 1], turn: 0 }];
-    game.keys.add('up');
-    game.tick(0.05);
-    click('restart');
-    vi.advanceTimersByTime(GAME_OVER_DELAY_MS);
-    expect(banner().hidden).toBe(true);
-    expect(game.state.over).toBeNull();
+describe('under the garden', () => {
+  it('has just the level and the counter, with no Start over button', () => {
+    expect(document.getElementById('restart')).toBeNull();
+    expect(document.querySelector('.bar').querySelectorAll('button')).toHaveLength(0);
   });
 });
 
