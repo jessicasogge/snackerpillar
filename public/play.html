@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Play Snackerpillar</title>
+  <meta name="description" content="A hungry caterpillar made of colorful circles. Eat dots to grow, and don't bump into anything!">
+  <!-- How the link looks when it's shared, same as the home page -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Snackerpillar">
+  <meta property="og:title" content="Play Snackerpillar">
+  <meta property="og:description" content="Steer a hungry caterpillar made of colorful circles. Eat dots to grow, and don't bump into anything!">
+  <meta property="og:url" content="https://jessicasogge.github.io/snackerpillar/play.html">
+  <meta property="og:image" content="https://jessicasogge.github.io/snackerpillar/social-preview.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="A smiling caterpillar made of rainbow-colored circles on the grass, above the words Snackerpillar: Eat the dots. Grow a rainbow.">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main>
+    <h1><a class="home-link" href="./">Snackerpillar</a></h1>
+
+    <div class="garden">
+      <canvas id="field" tabindex="0" aria-label="Garden. Use the arrow keys or drag to move the caterpillar."></canvas>
+      <div class="banner" id="banner" role="status" hidden>
+        <h2 id="banner-title">Level 1 complete!</h2>
+        <p id="banner-message"></p>
+        <div class="banner-buttons">
+          <button id="play-again" type="button">Play level 2</button>
+          <button id="start-over" type="button" hidden>Start over</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="bar">
+      <div class="tally"><span class="level" id="level">Level 1</span> <span id="count">1</span> <small id="unit">/ 10 circles</small></div>
+      <button id="restart" type="button">Restart level</button>
+    </div>
+    <p class="hint">Grow long enough to finish each of the 10 levels. <span class="for-keys">Use the arrow keys to move.</span><span class="for-touch">Drag anywhere on the grass to move her, like a trackpad.</span> Don't bump into rocks, mushrooms or her own body!</p>
+  </main>
+  <script type="module" src="game/main.js"></script>
+</body>
+</html>

@@ -57,7 +57,9 @@ Then open <http://localhost:3007>. To use another port, set `PORT`, like `PORT=4
 
 ## How it's put together
 
-The server (`src/index.ts`) is a small Express app that serves the `public/` folder and a `/health` check. The game itself runs entirely in the browser, as plain JavaScript modules in `public/game/`:
+The server (`src/index.ts`) is a small Express app that serves the `public/` folder and a `/health` check. `public/index.html` is the home page, with a caterpillar you can tap to feed and the **Press Start to Play** button. `public/play.html` is the game. `public/social-preview.png` is the picture shown when the link is shared in messages or on social media.
+
+The game itself runs entirely in the browser, as plain JavaScript modules in `public/game/`:
 
 | File | What's in it |
 |---|---|
@@ -68,6 +70,7 @@ The server (`src/index.ts`) is a small Express app that serves the `public/` fol
 | `field.js` | Keeping her on the field, and placing obstacles and dots |
 | `collide.js` | Whether she's touching a dot, an obstacle or her own body |
 | `draw.js` | Drawing the lawn, dots, rocks, mushrooms and her on the canvas |
+| `home.js` | The home page's caterpillar, which grows a circle each time you tap her |
 | `input.js` | Showing the directions for the device you're on: arrow keys on a computer, dragging on a phone or tablet |
 | `main.js` | Connecting it all to the page: input, the animation loop, the level and length counter, and the end-of-level pop-up |
 

@@ -12,7 +12,7 @@ beforeAll(async () => {
   ({ startGame } = await import('../public/game/main.js'));
 });
 
-const page = readFileSync(resolve(__dirname, '../public/index.html'), 'utf8');
+const page = readFileSync(resolve(__dirname, '../public/play.html'), 'utf8');
 
 beforeEach(() => {
   document.documentElement.innerHTML = page.replace(/^<!doctype html>/i, '');
