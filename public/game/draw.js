@@ -1,5 +1,5 @@
 import { CELL_R, HEAD_HUE, SPACING } from './config.js';
-import { pointAlong } from './trail.js';
+import { pointAlong, trailLength } from './trail.js';
 
 // Draws the game on a canvas: the lawn, the dots, the obstacles and her.
 // `colors` returns the lawn's colors ({ light, shade, blade }), read from the
@@ -239,8 +239,13 @@ export function makeRenderer(canvas, { colors, reduceMotion = false, makeCanvas 
     ctx.translate(w / 2, h / 2);
     for (const s of state.snacks) drawSnack(s, time);
     for (const o of state.obstacles) drawObstacle(o);
-    // Tail first, so each circle tucks under the one in front of it.
+    // Tail first, so each circle tucks under the one in front of it. A circle
+    // with no trail to sit on yet isn't drawn (and can't be bumped into; see
+    // tailHit). That only happens for a moment, if ever: when she's just
+    // eaten and hasn't crawled far enough for the new circle's spot.
+    const out = trailLength(state.trail);
     for (let i = state.body.length - 1; i >= 0; i--) {
+      if ((i + 1) * SPACING > out + 1e-9) continue;
       const seg = state.body[i];
       const p = pointAlong(state.trail, (i + 1) * SPACING);
       const wob = reduceMotion ? 0 : Math.sin(time * 6 - i * 0.7) * 0.035;

@@ -265,3 +265,147 @@ html.input-keys .for-keys {
   font-size: 0.9rem;
   max-width: 52ch;
 }
+
+/* The title on the game page goes back to the home page. */
+.home-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.home-link:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+
+/* The home page: the caterpillar, the name, and the
+   Start button, centered, with the signature pushed to the bottom. */
+body.home {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+body.home main {
+  flex: 1;
+  gap: 0;
+}
+
+.home-caterpillar {
+  /* Wider than the Snackerpillar logo under her, on any screen. */
+  width: min(680px, 100%);
+  margin-top: 2.5rem;
+  pointer-events: none;
+}
+
+.home-caterpillar svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+/* Each circle bobs up and down a moment after the one in front of it, so a
+   little wave runs down her body. */
+.home-caterpillar .seg {
+  animation: crawl 1.4s ease-in-out infinite;
+  animation-delay: calc(var(--i) * -0.12s);
+}
+
+.home-caterpillar .antennae {
+  transform-box: fill-box;
+  transform-origin: bottom center;
+  animation: antennae 2.2s ease-in-out infinite;
+}
+
+@keyframes crawl {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes antennae {
+  0%, 100% { transform: rotate(-4deg); }
+  50% { transform: rotate(4deg); }
+}
+
+.logo {
+  margin: 1.6rem 0 0.4rem;
+  font-size: clamp(2.4rem, 13vw, 5.2rem);
+  letter-spacing: 0.01em;
+}
+
+.home-tagline {
+  margin: 0 0 1.4rem;
+  font-size: clamp(1.05rem, 4.6vw, 1.3rem);
+  color: var(--muted);
+  letter-spacing: 0.01em;
+}
+
+.start-btn {
+  margin-top: 0.5rem;
+  padding: 0.8rem 2rem;
+  font-family: var(--display);
+  font-size: 1.3rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #2b1a05;
+  background: var(--accent);
+  border-radius: 999px;
+  box-shadow: 0 4px 0 #b86f17;
+  text-decoration: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.2s ease;
+}
+
+.start-btn:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+  box-shadow: 0 5px 0 #b86f17;
+}
+
+.start-btn:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #b86f17;
+}
+
+.start-btn:focus-visible {
+  outline: 3px solid var(--fg);
+  outline-offset: 4px;
+}
+
+.about {
+  max-width: 34rem;
+  margin: 2rem auto 0;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.sister-game {
+  margin: 0.75rem auto 0;
+  color: var(--muted);
+}
+
+.sister-game a {
+  color: var(--fg);
+  font-weight: 700;
+}
+
+.signature {
+  margin: 2rem 0 0.5rem;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  opacity: 0.8;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-caterpillar .seg,
+  .home-caterpillar .antennae {
+    animation: none;
+  }
+
+  .start-btn {
+    transition: none;
+  }
+}

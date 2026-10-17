@@ -9,10 +9,12 @@ const pub = resolve(__dirname, '../public');
 const read = (path) => readFileSync(resolve(pub, path), 'utf8');
 
 describe('working from a folder on GitHub Pages', () => {
-  it('links the page to its icon, stylesheet and script with relative paths', () => {
-    const html = read('index.html');
-    const links = [...html.matchAll(/(?:href|src)="([^"]+)"/g)].map((m) => m[1]);
-    expect(links).toEqual(expect.arrayContaining(['favicon.svg', 'styles.css', 'game/main.js']));
+  it.each([
+    ['index.html', ['favicon.svg', 'styles.css', 'game/home.js', 'play.html']],
+    ['play.html', ['favicon.svg', 'styles.css', 'game/main.js', './']],
+  ])('links %s to its own files with relative paths', (page, expected) => {
+    const links = [...read(page).matchAll(/(?:href|src)="([^"]+)"/g)].map((m) => m[1]);
+    expect(links).toEqual(expect.arrayContaining(expected));
     for (const link of links) expect(link).not.toMatch(/^\//);
   });
 
@@ -27,5 +29,27 @@ describe('working from a folder on GitHub Pages', () => {
       const imports = [...read(`game/${file}`).matchAll(/from '([^']+)'/g)].map((m) => m[1]);
       for (const path of imports) expect(path).toMatch(/^\.\//);
     }
+  });
+});
+
+describe('the picture shown when the link is shared', () => {
+  const png = readFileSync(resolve(pub, 'social-preview.png'));
+
+  it('is a 1200 by 630 PNG, the size link previews expect', () => {
+    expect(png.subarray(1, 4).toString()).toBe('PNG');
+    expect(png.readUInt32BE(16)).toBe(1200);
+    expect(png.readUInt32BE(20)).toBe(630);
+  });
+
+  it.each(['index.html', 'play.html'])('is named in %s with its full web address, size and a description', (page) => {
+    const html = read(page);
+    const meta = (property) => html.match(new RegExp(`<meta (?:property|name)="${property}" content="([^"]*)"`))?.[1];
+    expect(meta('og:image')).toBe('https://jessicasogge.github.io/snackerpillar/social-preview.png');
+    expect(meta('og:image:width')).toBe('1200');
+    expect(meta('og:image:height')).toBe('630');
+    expect(meta('og:image:alt')).toMatch(/caterpillar/);
+    expect(meta('og:title')).toMatch(/Snackerpillar/);
+    expect(meta('og:description')).toBeTruthy();
+    expect(meta('twitter:card')).toBe('summary_large_image');
   });
 });

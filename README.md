@@ -8,31 +8,28 @@ A browser game about a very hungry caterpillar made of circles. Every dot she ea
 
 - **Move** with the arrow keys. She only moves while you're steering her, and turns sharply enough to U-turn without running into herself. On a touch screen, drag anywhere on the grass like a trackpad: she moves the way your finger slides, so your finger never hides her.
 - **Eat the colored dots** to grow. She starts with one purple circle behind her head. Each one adds a circle to the end of her body in its color, and a new dot appears somewhere else a moment later.
-- **Don't bump into rocks, mushrooms or her own body.** Any of those ends the level. The edges of the garden are safe: she just stops there, and you can slide her along them.
+- **Don't bump into rocks, mushrooms or her own body.** Any of those ends the game, and you start over from level 1. The edges of the garden are safe: she just stops there, and you can slide her along them.
 
 ### Levels
 
-There are 10 levels. Level 1 has 3 obstacles and you play until she's 15 circles long. Each level after that adds one more obstacle and 5 more circles:
+There are 5 levels, and she keeps every circle she's grown from one level to the next. Each level adds one more obstacle and asks her to grow 20 more circles:
 
 | Level | Obstacles | Grow to |
 |---|---|---|
-| 1 | 3 | 15 circles |
-| 2 | 4 | 20 circles |
-| 3 | 5 | 25 circles |
-| 4 | 6 | 30 circles |
-| 5 | 7 | 35 circles |
-| 6 | 8 | 40 circles |
-| 7 | 9 | 45 circles |
-| 8 | 10 | 50 circles |
-| 9 | 11 | 55 circles |
-| 10 | 12 | 60 circles |
+| 1 | 3 | 20 circles |
+| 2 | 4 | 40 circles |
+| 3 | 5 | 60 circles |
+| 4 | 6 | 80 circles |
+| 5 | 7 | 100 circles |
+
+Each new level picks up exactly where the last one ended: she's in the same spot, facing the same way, with all her circles showing, and the rocks, mushrooms and dots stay where they were. One more obstacle is added, clear of her body, the way ahead of her face, and the dots.
 
 At the end of every level, a pop-up tells you how it went:
 
-- **Level complete:** **Play level 2** (and so on) takes you to the next level. After level 10, **Play again** goes back to level 1.
-- **Game over:** it says what she ran into, and **Try level 3 again** (or whichever level you're on) starts it over. Past level 1 there's also **Start over**, which goes back to level 1.
+- **Level complete:** **Play level 2** (and so on) takes you to the next level, with all her circles. After level 5, **Play again** goes back to level 1.
+- **Game over:** it says what she ran into, and **Start over** goes back to level 1 with just 2 circles. There's no trying a level again.
 
-**Restart level**, under the garden, starts the level you're on over at any time. The levels are set in `LEVELS` in `public/game/config.js`.
+**Start over**, under the garden, also goes back to level 1 at any time. The levels are set in `LEVELS` in `public/game/config.js`.
 
 The directions under the garden match your device: the arrow keys on a computer, dragging on a phone or tablet. On a device with both, like a touchscreen laptop, they switch to whichever you use.
 
@@ -57,7 +54,9 @@ Then open <http://localhost:3007>. To use another port, set `PORT`, like `PORT=4
 
 ## How it's put together
 
-The server (`src/index.ts`) is a small Express app that serves the `public/` folder and a `/health` check. The game itself runs entirely in the browser, as plain JavaScript modules in `public/game/`:
+The server (`src/index.ts`) is a small Express app that serves the `public/` folder and a `/health` check. `public/index.html` is the home page, with a rainbow caterpillar, the **Press Start to Play** button, and a link to the [Tiny Game Arcade](https://jessicasogge.github.io/tiny-game-arcade/). `public/play.html` is the game. `public/social-preview.png` is the picture shown when the link is shared in messages or on social media.
+
+The game itself runs entirely in the browser, as plain JavaScript modules in `public/game/`:
 
 | File | What's in it |
 |---|---|
@@ -68,6 +67,7 @@ The server (`src/index.ts`) is a small Express app that serves the `public/` fol
 | `field.js` | Keeping her on the field, and placing obstacles and dots |
 | `collide.js` | Whether she's touching a dot, an obstacle or her own body |
 | `draw.js` | Drawing the lawn, dots, rocks, mushrooms and her on the canvas |
+| `home.js` | Drawing the rainbow caterpillar on the home page and in the link-preview picture |
 | `input.js` | Showing the directions for the device you're on: arrow keys on a computer, dragging on a phone or tablet |
 | `main.js` | Connecting it all to the page: input, the animation loop, the level and length counter, and the end-of-level pop-up |
 

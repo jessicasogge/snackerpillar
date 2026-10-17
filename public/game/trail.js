@@ -19,6 +19,13 @@ export function trimTrail(trail, length) {
   }
 }
 
+// How long the trail is, from the head to its far end.
+export function trailLength(trail) {
+  let total = 0;
+  for (let i = 1; i < trail.length; i++) total += Math.hypot(trail[i].x - trail[i - 1].x, trail[i].y - trail[i - 1].y);
+  return total;
+}
+
 // The spot `dist` along the trail from the head, or the trail's end if it's
 // shorter than that.
 export function pointAlong(trail, dist) {

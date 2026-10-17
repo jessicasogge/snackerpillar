@@ -12,7 +12,7 @@ beforeAll(async () => {
   ({ startGame } = await import('../public/game/main.js'));
 });
 
-const page = readFileSync(resolve(__dirname, '../public/index.html'), 'utf8');
+const page = readFileSync(resolve(__dirname, '../public/play.html'), 'utf8');
 
 beforeEach(() => {
   document.documentElement.innerHTML = page.replace(/^<!doctype html>/i, '');
@@ -64,9 +64,11 @@ function bump(game, kind = 'rock') {
   vi.advanceTimersByTime(GAME_OVER_DELAY_MS);
 }
 
-// Win levels until she's on `level`.
+// Win levels until she's on `level` (at most 5 tries, so a mistake here
+// fails the test rather than looping forever).
 function reach(game, level) {
-  while (game.state.level < level) {
+  for (let tries = 0; game.state.level < level; tries++) {
+    if (tries >= 5) throw new Error(`couldn't reach level ${level}`);
     win(game);
     click('play-again');
   }
@@ -77,7 +79,7 @@ describe('the page', () => {
     startGame();
     expect(text('level')).toBe('Level 1');
     expect(text('count')).toBe('2');
-    expect(text('unit')).toBe('/ 15 circles');
+    expect(text('unit')).toBe('/ 20 circles');
     expect(banner().hidden).toBe(true);
   });
 
@@ -101,7 +103,7 @@ describe('the page', () => {
     expect(hint.querySelector('.for-touch').textContent).toMatch(/^Drag anywhere on the grass/);
     expect(hint.querySelector('.for-keys').textContent).not.toMatch(/touch|drag/i);
     expect(hint.querySelector('.for-touch').textContent).not.toMatch(/arrow|key/i);
-    expect(hint.textContent).toMatch(/10 levels/);
+    expect(hint.textContent).toMatch(/all 5 levels/);
     expect(hint.textContent).not.toMatch(/WASD|\bW\b/);
   });
 
@@ -136,7 +138,7 @@ describe('the length counter', () => {
     game.state.snacks = [{ x: 0, y: -0.06, r: 0.02, hue: 50, born: 0, eatenAt: null }];
     game.tick(0.05);
     expect(text('count')).toBe('3');
-    expect(text('unit')).toBe('/ 15 circles');
+    expect(text('unit')).toBe('/ 20 circles');
   });
 });
 
@@ -146,9 +148,8 @@ describe('winning a level', () => {
     win(game);
     expect(banner().hidden).toBe(false);
     expect(text('banner-title')).toBe('Level 1 complete!');
-    expect(text('banner-message')).toBe('She grew to 15 circles long!');
+    expect(text('banner-message')).toBe("She's 20 circles long! Next, grow her to 40.");
     expect(text('play-again')).toBe('Play level 2');
-    expect(document.getElementById('start-over').hidden).toBe(true);
     expect(document.activeElement).toBe(document.getElementById('play-again'));
   });
 
@@ -163,35 +164,51 @@ describe('winning a level', () => {
     expect(banner().hidden).toBe(true);
   });
 
-  it('goes on to the next level, with one more obstacle and a longer goal', () => {
+  it('goes on to the next level keeping all her circles, with one more obstacle and 20 more to grow', () => {
     const game = startGame();
     win(game);
+    const hues = game.state.body.map((c) => c.hue);
     click('play-again');
     expect(banner().hidden).toBe(true);
     expect(text('level')).toBe('Level 2');
-    expect(text('unit')).toBe('/ 20 circles');
-    expect(text('count')).toBe('2');
+    expect(text('count')).toBe('20');
+    expect(text('unit')).toBe('/ 40 circles');
+    expect(game.state.body.map((c) => c.hue)).toEqual(hues);
     expect(game.state.obstacles).toHaveLength(4);
   });
 
-  it('goes all the way up to level 10, played to 60 circles', () => {
+  it('keeps the colors of the dots she ate', () => {
     const game = startGame();
-    reach(game, 10);
-    expect(text('level')).toBe('Level 10');
-    expect(text('unit')).toBe('/ 60 circles');
-    expect(game.state.obstacles).toHaveLength(12);
+    game.state.obstacles = [];
+    game.state.body = Array.from({ length: game.state.goal - 2 }, (_, i) => ({ hue: i * 10, born: -1 }));
+    game.state.snacks = [{ x: 0, y: -0.06, r: 0.02, hue: 333, born: 0, eatenAt: null }];
+    game.tick(0.05);
+    vi.advanceTimersByTime(WIN_DELAY_MS);
+    click('play-again');
+    expect(game.state.body[0].hue).toBe(0);
+    expect(game.state.body.at(-1).hue).toBe(333);
   });
 
-  it('celebrates beating level 10, then starts again from level 1', () => {
+  it('goes up to level 5, played to 100 circles', () => {
     const game = startGame();
-    reach(game, 10);
+    reach(game, 5);
+    expect(text('level')).toBe('Level 5');
+    expect(text('count')).toBe('80');
+    expect(text('unit')).toBe('/ 100 circles');
+    expect(game.state.obstacles).toHaveLength(7);
+  });
+
+  it('celebrates beating level 5, then starts again from level 1 with 2 circles', () => {
+    const game = startGame();
+    reach(game, 5);
     win(game);
     expect(text('banner-title')).toBe('You won!');
-    expect(text('banner-message')).toBe('You beat all 10 levels with a caterpillar 60 circles long!');
+    expect(text('banner-message')).toBe('You beat all 5 levels with a caterpillar 100 circles long!');
     expect(text('play-again')).toBe('Play again');
     click('play-again');
     expect(text('level')).toBe('Level 1');
-    expect(text('unit')).toBe('/ 15 circles');
+    expect(text('count')).toBe('2');
+    expect(text('unit')).toBe('/ 20 circles');
   });
 });
 
@@ -206,35 +223,22 @@ describe('game over', () => {
     vi.advanceTimersByTime(GAME_OVER_DELAY_MS);
     expect(banner().hidden).toBe(false);
     expect(text('banner-title')).toBe('Game over');
-    expect(text('banner-message')).toBe('Bonk! She ran into a mushroom.');
-    expect(text('play-again')).toBe('Try level 1 again');
+    expect(text('banner-message')).toBe('Bonk! She ran into a mushroom. Back to level 1!');
+    expect(text('play-again')).toBe('Start over');
   });
 
-  it("doesn't offer Start over on level 1, where it would just be trying again", () => {
-    bump(startGame());
-    expect(document.getElementById('start-over').hidden).toBe(true);
-  });
-
-  it('tries the same level again', () => {
+  it("doesn't let you try a level again: a bump on a later level goes back to level 1", () => {
     const game = startGame();
     reach(game, 3);
     bump(game);
-    expect(text('play-again')).toBe('Try level 3 again');
+    expect(text('play-again')).toBe('Start over');
+    expect(document.body.textContent).not.toMatch(/Try level|try again/i);
     click('play-again');
-    expect(game.state.level).toBe(3);
+    expect(game.state.level).toBe(1);
     expect(game.state.over).toBeNull();
+    expect(text('level')).toBe('Level 1');
     expect(text('count')).toBe('2');
     expect(banner().hidden).toBe(true);
-  });
-
-  it('offers Start over past level 1, which goes back to level 1', () => {
-    const game = startGame();
-    reach(game, 2);
-    bump(game);
-    expect(document.getElementById('start-over').hidden).toBe(false);
-    click('start-over');
-    expect(game.state.level).toBe(1);
-    expect(text('level')).toBe('Level 1');
   });
 
   it('says when she ran into her own tail', () => {
@@ -249,7 +253,7 @@ describe('game over', () => {
     game.state.trail = Array.from({ length: 60 }, (_, i) => ({ x: game.state.head.x, y: game.state.head.y + (i < 30 ? i : 60 - i) * 0.01 }));
     game.tick(0.01);
     vi.advanceTimersByTime(GAME_OVER_DELAY_MS);
-    expect(text('banner-message')).toBe('Bonk! She ran into her own tail.');
+    expect(text('banner-message')).toBe('Bonk! She ran into her own tail. Back to level 1!');
   });
 
   it("doesn't remember a best score", () => {
@@ -260,14 +264,15 @@ describe('game over', () => {
   });
 });
 
-describe('Restart level', () => {
-  it('starts the level she is on over', () => {
+describe('Start over', () => {
+  it('goes back to level 1 with 2 circles from any level', () => {
     const game = startGame();
     reach(game, 2);
-    game.state.body.push({ hue: 0, born: 0 });
+    expect(text('restart')).toBe('Start over');
     click('restart');
-    expect(game.state.level).toBe(2);
+    expect(game.state.level).toBe(1);
     expect(game.state.body).toHaveLength(1);
+    expect(text('count')).toBe('2');
   });
 
   it("cancels a pop-up that hasn't come up yet", () => {

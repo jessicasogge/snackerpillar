@@ -12,7 +12,7 @@ const BUMPED = {
 };
 
 // Wire the game to the page: input, the animation loop, the level and length
-// counter, the Restart level button, and the pop-up at the end of each level.
+// counter, the Start over button, and the pop-up at the end of each level.
 // Returns a few handles for tests.
 export function startGame({ doc = document, win = window } = {}) {
   const canvas = doc.getElementById('field');
@@ -24,7 +24,6 @@ export function startGame({ doc = document, win = window } = {}) {
   const bannerTitle = doc.getElementById('banner-title');
   const bannerMessage = doc.getElementById('banner-message');
   const playButton = doc.getElementById('play-again');
-  const startOverButton = doc.getElementById('start-over');
   const reduceMotion = win.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
 
   const colors = () => {
@@ -37,18 +36,20 @@ export function startGame({ doc = document, win = window } = {}) {
   watchInputMode(doc.documentElement, win);
 
   let state;
-  let nextLevel = 1; // where the pop-up's main button goes
+  // Where the pop-up's button goes: the next level, starting right where she
+  // is now, or back to level 1 with just her first purple circle.
+  let next = { level: 1 };
   let bannerTimer = null;
 
   const keys = new Set();
   const drag = { x: 0, y: 0 };
 
-  function play(level) {
+  function play({ level, from }) {
     win.clearTimeout(bannerTimer);
     banner.hidden = true;
     keys.clear();
     drag.x = drag.y = 0;
-    state = newGame({ halfH, level });
+    state = newGame({ halfH, level, from });
     showCount();
     canvas.focus({ preventScroll: true });
   }
@@ -60,29 +61,29 @@ export function startGame({ doc = document, win = window } = {}) {
     unitEl.textContent = `/ ${state.goal} circles`;
   }
 
-  function showBanner(title, message, button, { startOver = false } = {}) {
+  function showBanner(title, message, button) {
     bannerTitle.textContent = title;
     bannerMessage.textContent = message;
     playButton.textContent = button;
-    startOverButton.hidden = !startOver;
     banner.hidden = false;
     playButton.focus({ preventScroll: true });
   }
 
   function showWin() {
+    const n = length(state);
     if (hasNextLevel(state)) {
-      nextLevel = state.level + 1;
-      showBanner(`Level ${state.level} complete!`, `She grew to ${state.goal} circles long!`, `Play level ${nextLevel}`);
+      next = { level: state.level + 1, from: state };
+      showBanner(`Level ${state.level} complete!`, `She's ${n} circles long! Next, grow her to ${LEVELS[state.level].goal}.`, `Play level ${next.level}`);
     } else {
-      nextLevel = 1;
-      showBanner('You won!', `You beat all ${LEVELS.length} levels with a caterpillar ${state.goal} circles long!`, 'Play again');
+      next = { level: 1 };
+      showBanner('You won!', `You beat all ${LEVELS.length} levels with a caterpillar ${n} circles long!`, 'Play again');
     }
   }
 
+  // There's no trying a level again: a bump means starting over from level 1.
   function showGameOver() {
-    nextLevel = state.level;
-    // On level 1, "Start over" would just be trying again.
-    showBanner('Game over', BUMPED[state.over], `Try level ${state.level} again`, { startOver: state.level > 1 });
+    next = { level: 1 };
+    showBanner('Game over', `${BUMPED[state.over]} Back to level 1!`, 'Start over');
   }
 
   // Arrow keys steer.
@@ -116,9 +117,8 @@ export function startGame({ doc = document, win = window } = {}) {
   canvas.addEventListener('pointerup', endDrag);
   canvas.addEventListener('pointercancel', endDrag);
 
-  restartButton.addEventListener('click', () => play(state.level));
-  playButton.addEventListener('click', () => play(nextLevel));
-  startOverButton.addEventListener('click', () => play(1));
+  restartButton.addEventListener('click', () => play({ level: 1 }));
+  playButton.addEventListener('click', () => play(next));
 
   if (win.ResizeObserver) {
     new win.ResizeObserver(() => {
@@ -145,7 +145,7 @@ export function startGame({ doc = document, win = window } = {}) {
     win.requestAnimationFrame(frame);
   }
 
-  play(1);
+  play({ level: 1 });
   win.requestAnimationFrame(frame);
   return { get state() { return state; }, tick, keys, drag };
 }

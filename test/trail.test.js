@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { extendTrail, pointAlong, trimTrail } from '../public/game/trail.js';
+import { extendTrail, pointAlong, trailLength, trimTrail } from '../public/game/trail.js';
 
 describe('extendTrail', () => {
   it('adds the head spot to the front once she has moved far enough', () => {
@@ -62,5 +62,15 @@ describe('pointAlong', () => {
     const p = pointAlong(t, 1);
     t[0].x = 9;
     expect(p.x).toBe(0);
+  });
+});
+
+describe('trailLength', () => {
+  it('adds up the trail from the head to its far end', () => {
+    expect(trailLength([{ x: 0, y: 0 }, { x: 0.3, y: 0 }, { x: 0.3, y: 0.4 }])).toBeCloseTo(0.7);
+  });
+
+  it('is 0 for a trail that is just the head', () => {
+    expect(trailLength([{ x: 0.2, y: 0.2 }])).toBe(0);
   });
 });

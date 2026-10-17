@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { CELL_R, LEVELS, RESPAWN_SECONDS, START_HUE } from '../public/game/config.js';
+import { CELL_R, LEVELS, RESPAWN_SECONDS, SPACING, START_HUE } from '../public/game/config.js';
 import { seeded } from '../public/game/draw.js';
-import { hasNextLevel, length, newGame, step } from '../public/game/game.js';
+import { hasNextLevel, herPoints, length, newGame, step } from '../public/game/game.js';
+import { trailLength } from '../public/game/trail.js';
+import { placeObstacles } from '../public/game/field.js';
 
 const HALF_H = 0.75;
 const idle = () => ({ keys: new Set(), drag: { x: 0, y: 0 }, halfH: HALF_H });
@@ -49,32 +51,27 @@ describe('a new game', () => {
 
 describe('levels', () => {
   it.each([
-    [1, 3, 15],
-    [2, 4, 20],
-    [3, 5, 25],
-    [4, 6, 30],
-    [5, 7, 35],
-    [6, 8, 40],
-    [7, 9, 45],
-    [8, 10, 50],
-    [9, 11, 55],
-    [10, 12, 60],
+    [1, 3, 20],
+    [2, 4, 40],
+    [3, 5, 60],
+    [4, 6, 80],
+    [5, 7, 100],
   ])('level %i has %i obstacles and is played to %i circles', (level, obstacles, goal) => {
     const state = newGame({ halfH: HALF_H, level, rand: seeded(level) });
     expect(state.obstacles).toHaveLength(obstacles);
     expect(state.goal).toBe(goal);
   });
 
-  it('has ten levels, with a next one after every level but the last', () => {
-    expect(LEVELS).toHaveLength(10);
-    for (let level = 1; level <= 9; level++) expect(hasNextLevel(newGame({ halfH: HALF_H, level }))).toBe(true);
-    expect(hasNextLevel(newGame({ halfH: HALF_H, level: 10 }))).toBe(false);
+  it('has five levels, with a next one after every level but the last', () => {
+    expect(LEVELS).toHaveLength(5);
+    for (let level = 1; level <= 4; level++) expect(hasNextLevel(newGame({ halfH: HALF_H, level }))).toBe(true);
+    expect(hasNextLevel(newGame({ halfH: HALF_H, level: 5 }))).toBe(false);
   });
 
   it('always fits every obstacle, even on the most crowded level, on a wide or a square field', () => {
     for (const halfH of [0.75, 1]) {
       for (let seed = 1; seed <= 200; seed++) {
-        expect(newGame({ halfH, level: 10, rand: seeded(seed) }).obstacles).toHaveLength(12);
+        expect(newGame({ halfH, level: 5, rand: seeded(seed) }).obstacles).toHaveLength(7);
       }
     }
   });
@@ -83,7 +80,7 @@ describe('levels', () => {
     const state = gameWithSnackAhead();
     state.body = Array.from({ length: state.goal - 2 }, () => ({ hue: 0, born: -1 }));
     step(state, { ...idle(), dt: 0.05 });
-    expect(length(state)).toBe(15);
+    expect(length(state)).toBe(20);
     expect(state.won).toBe(true);
     expect(state.over).toBeNull();
   });
@@ -92,7 +89,7 @@ describe('levels', () => {
     const state = gameWithSnackAhead();
     state.body = Array.from({ length: state.goal - 3 }, () => ({ hue: 0, born: -1 }));
     step(state, { ...idle(), dt: 0.05 });
-    expect(length(state)).toBe(14);
+    expect(length(state)).toBe(19);
     expect(state.won).toBe(false);
   });
 
@@ -111,6 +108,123 @@ describe('levels', () => {
     const before = JSON.stringify(state);
     expect(step(state, { ...idle(), dt: 0.05 })).toEqual([]);
     expect(JSON.stringify(state)).toBe(before);
+  });
+});
+
+describe('starting the next level', () => {
+  // Finish level 1 after crawling a winding path, 20 circles long.
+  function finishedLevel1(seed = 6, halfH = HALF_H) {
+    const rand = seeded(seed);
+    const state = newGame({ halfH, rand });
+    state.obstacles = [];
+    state.snacks = [];
+    state.body = Array.from({ length: 19 }, (_, i) => ({ hue: i * 15, born: -1 }));
+    const dirs = ['left', 'up', 'right', 'down'];
+    // Ignore any bumps on the way, and don't stop at the level's goal: this
+    // only lays her out along a path.
+    state.goal = Infinity;
+    for (let i = 0; i < 160; i++) {
+      state.over = null;
+      step(state, { ...idle(), halfH, keys: new Set([dirs[Math.floor(i / 25) % 4]]), dt: 0.03 });
+    }
+    state.over = null;
+    state.won = true;
+    return state;
+  }
+
+  it('starts her exactly where she was, facing the same way', () => {
+    const done = finishedLevel1();
+    const next = newGame({ halfH: HALF_H, level: 2, from: done, rand: seeded(1) });
+    expect(next.head).toEqual(done.head);
+    expect(next.trail).toEqual(done.trail);
+  });
+
+  it('keeps all her circles, in their colors and in the same places', () => {
+    const done = finishedLevel1();
+    const next = newGame({ halfH: HALF_H, level: 2, from: done, rand: seeded(1) });
+    expect(length(next)).toBe(20);
+    expect(next.body.map((c) => c.hue)).toEqual(done.body.map((c) => c.hue));
+    expect(herPoints(next)).toEqual(herPoints(done));
+    expect(next.goal).toBe(40);
+  });
+
+  it('shows every circle from the start', () => {
+    const done = finishedLevel1();
+    const next = newGame({ halfH: HALF_H, level: 2, from: done, rand: seeded(1) });
+    expect(trailLength(next.trail)).toBeGreaterThanOrEqual(next.body.length * SPACING);
+  });
+
+  it('keeps the rocks and mushrooms where they were, and adds one more', () => {
+    const done = finishedLevel1();
+    done.obstacles = placeObstacles(HALF_H, 3, seeded(2), { points: herPoints(done), head: done.head });
+    const next = newGame({ halfH: HALF_H, level: 2, from: done, rand: seeded(1) });
+    expect(next.obstacles).toHaveLength(4);
+    expect(next.obstacles.slice(0, 3)).toEqual(done.obstacles);
+    const added = next.obstacles[3];
+    for (const o of done.obstacles) expect(Math.hypot(added.x - o.x, added.y - o.y)).toBeGreaterThan(added.r + o.r);
+  });
+
+  it('keeps the dots where they were, without popping them in again', () => {
+    const done = finishedLevel1();
+    done.snacks = [
+      { x: 0.7, y: 0.5, r: 0.02, hue: 10, born: 0.5, eatenAt: null },
+      { x: -0.8, y: -0.6, r: 0.016, hue: 200, born: 1, eatenAt: null },
+    ];
+    const next = newGame({ halfH: HALF_H, level: 2, from: done, rand: seeded(1) });
+    expect(next.snacks.map(({ x, y, r, hue }) => ({ x, y, r, hue }))).toEqual(done.snacks.map(({ x, y, r, hue }) => ({ x, y, r, hue })));
+    for (const s of next.snacks) expect(s.born).toBeLessThan(0);
+  });
+
+  it('brings back the dot she just ate on its usual timer', () => {
+    const done = finishedLevel1();
+    done.time = 40;
+    done.snacks = [{ x: 0.7, y: 0.5, r: 0.02, hue: 10, born: 0, eatenAt: 39.9 }];
+    done.respawns = [39.9 + RESPAWN_SECONDS];
+    const next = newGame({ halfH: HALF_H, level: 2, from: done, rand: seeded(1) });
+    expect(next.snacks).toHaveLength(0); // the eaten one is gone
+    for (let t = 0; t < RESPAWN_SECONDS; t += 0.05) step(next, { ...idle(), dt: 0.05 });
+    expect(next.snacks).toHaveLength(1);
+  });
+
+  it("doesn't put the new obstacle on top of a dot", () => {
+    for (let seed = 1; seed <= 30; seed++) {
+      const done = finishedLevel1(seed);
+      done.snacks = Array.from({ length: 12 }, (_, i) => ({ x: -0.9 + (i % 6) * 0.36, y: i < 6 ? -0.6 : 0.6, r: 0.022, hue: 0, born: 0, eatenAt: null }));
+      const next = newGame({ halfH: HALF_H, level: 2, from: done, rand: seeded(seed) });
+      for (const o of next.obstacles) {
+        for (const d of next.snacks) expect(Math.hypot(o.x - d.x, o.y - d.y)).toBeGreaterThan(o.r + d.r);
+      }
+    }
+  });
+
+  it("doesn't change the level she finished", () => {
+    const done = finishedLevel1();
+    const before = JSON.stringify(done);
+    const next = newGame({ halfH: HALF_H, level: 2, from: done, rand: seeded(1) });
+    next.head.x += 0.5;
+    next.trail[0].x += 0.5;
+    expect(JSON.stringify(done)).toBe(before);
+  });
+
+  it.each([0.75, 1])('puts every obstacle and dot clear of her, and none right ahead of her face (field %s tall)', (halfH) => {
+    for (let seed = 1; seed <= 40; seed++) {
+      const done = finishedLevel1(seed, halfH);
+      const next = newGame({ halfH, level: 2, from: done, rand: seeded(seed) });
+      expect(next.obstacles).toHaveLength(4);
+      const her = herPoints(next);
+      for (const o of next.obstacles) {
+        for (const p of her) expect(Math.hypot(o.x - p.x, o.y - p.y)).toBeGreaterThan(o.r + CELL_R);
+      }
+      for (const s of next.snacks) {
+        for (const p of her.slice(1)) expect(Math.hypot(s.x - p.x, s.y - p.y)).toBeGreaterThan(CELL_R);
+      }
+      // Crawling straight on for a moment doesn't bump into anything.
+      for (let i = 0; i < 6; i++) {
+        const dir = next.head.dir;
+        step(next, { ...idle(), halfH, keys: new Set([Math.abs(Math.cos(dir)) > Math.abs(Math.sin(dir)) ? (Math.cos(dir) > 0 ? 'right' : 'left') : (Math.sin(dir) > 0 ? 'down' : 'up')]), dt: 0.03 });
+      }
+      expect(next.over === 'rock' || next.over === 'mushroom').toBe(false);
+    }
   });
 });
 
@@ -187,7 +301,7 @@ describe('game over', () => {
   });
 
   it('ends when she crawls into her own body', () => {
-    // Level 3, so her 13 circles aren't already long enough to finish it (25).
+    // Level 3, so her 13 circles aren't already long enough to finish it (60).
     const state = newGame({ halfH: HALF_H, level: 3, rand: seeded(2) });
     state.obstacles = [];
     state.snacks = [];

@@ -21,10 +21,22 @@ describe('the server', () => {
     expect(await res.json()).toEqual({ ok: true });
   });
 
-  it('serves the game page', async () => {
+  it('serves the home page', async () => {
     const res = await fetch(`${base}/`);
     expect(res.status).toBe(200);
-    expect(await res.text()).toContain('<title>Snackerpillar</title>');
+    expect(await res.text()).toContain('<title>Snackerpillar: A Hungry Caterpillar Game</title>');
+  });
+
+  it('serves the game page', async () => {
+    const res = await fetch(`${base}/play.html`);
+    expect(res.status).toBe(200);
+    expect(await res.text()).toContain('<title>Play Snackerpillar</title>');
+  });
+
+  it('serves the link-preview picture', async () => {
+    const res = await fetch(`${base}/social-preview.png`);
+    expect(res.status).toBe(200);
+    expect(res.headers.get('content-type')).toBe('image/png');
   });
 
   it('serves the game code', async () => {
