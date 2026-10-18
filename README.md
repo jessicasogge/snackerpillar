@@ -76,10 +76,6 @@ The game itself runs entirely in the browser, as plain JavaScript modules in `pu
 
 Tests live in `test/` and run with [Vitest](https://vitest.dev/). GitHub Actions runs them on every push and pull request.
 
-## Visit counts
-
-Both pages load [GoatCounter](https://www.goatcounter.com/) to count visits, sharing PetriPals' site at https://petripals.goatcounter.com. Snackerpillar's visits show up there under paths starting with `/snackerpillar/`. It uses no cookies and collects nothing personal.
-
 ## Publishing
 
 Every push to `main` publishes the game to [GitHub Pages](https://jessicasogge.github.io/snackerpillar/) (`.github/workflows/pages.yml`). The tests and typecheck run first, and if they fail nothing is published. Pages serves the `public/` folder as is, with no server. You can also rerun it by hand from the Actions tab.
