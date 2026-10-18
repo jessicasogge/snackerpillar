@@ -282,6 +282,51 @@ describe('under the garden', () => {
   });
 });
 
+describe('turning the phone', () => {
+  // A stand-in for the browser's ResizeObserver, so a test can say when the
+  // garden has been resized.
+  let resized;
+  beforeEach(() => {
+    window.ResizeObserver = class {
+      constructor(callback) { resized = callback; }
+      observe() {}
+    };
+  });
+  afterEach(() => {
+    delete window.ResizeObserver;
+  });
+  const sizeField = (w, h) => {
+    Object.defineProperty(HTMLCanvasElement.prototype, 'clientWidth', { configurable: true, get: () => w });
+    Object.defineProperty(HTMLCanvasElement.prototype, 'clientHeight', { configurable: true, get: () => h });
+  };
+
+  it('fixes the garden to the shape it first had', () => {
+    startGame();
+    expect(document.getElementById('field').style.aspectRatio).toBe('2 / 1.5');
+  });
+
+  it('keeps everything inside the garden after the phone is turned, even on the next level', () => {
+    const game = startGame();
+    sizeField(800, 300); // much wider than it is tall now
+    resized();
+    win(game);
+    click('play-again');
+    expect(game.state.level).toBe(2);
+    for (const o of game.state.obstacles) expect(Math.abs(o.y) + o.r).toBeLessThanOrEqual(0.75);
+    for (const d of game.state.snacks) expect(Math.abs(d.y)).toBeLessThanOrEqual(0.75);
+    // And she still stops at the top edge of the same garden (her body
+    // trails below her, so she crawls up, away from it).
+    game.state.obstacles = [];
+    game.state.snacks = [];
+    game.state.head.dir = -Math.PI / 2;
+    game.keys.add('up');
+    for (let i = 0; i < 80 && !game.state.over; i++) game.tick(0.05);
+    expect(game.state.over).toBeNull();
+    expect(game.state.head.y).toBeLessThan(-0.6);
+    expect(game.state.head.y).toBeGreaterThan(-0.75);
+  });
+});
+
 describe('controls', () => {
   it('steers with the arrow keys', () => {
     const game = startGame();

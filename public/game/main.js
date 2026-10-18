@@ -29,7 +29,13 @@ export function startGame({ doc = document, win = window } = {}) {
     return { light: read('--field-1', '#b8de86'), shade: read('--field-2', '#8fc566'), blade: read('--blade', 'rgba(60, 110, 40, 0.28)') };
   };
   const renderer = makeRenderer(canvas, { colors, reduceMotion, makeCanvas: () => doc.createElement('canvas') });
-  let halfH = renderer.resize(win.devicePixelRatio);
+  // The garden's shape (its height over its width, halved) is picked once,
+  // from how the page first lays it out: square on a phone held upright,
+  // 4:3 everywhere else. It then stays that shape for the whole game, even
+  // if the phone is turned, so nothing ends up outside the garden; on a
+  // phone turned sideways, the stylesheet fits it to the screen's height.
+  const halfH = renderer.resize(win.devicePixelRatio);
+  canvas.style.aspectRatio = `2 / ${2 * halfH}`; // the field is 2 wide and 2 * halfH tall
   watchInputMode(doc.documentElement, win);
 
   let state;
@@ -115,9 +121,7 @@ export function startGame({ doc = document, win = window } = {}) {
   playButton.addEventListener('click', () => play(next));
 
   if (win.ResizeObserver) {
-    new win.ResizeObserver(() => {
-      halfH = renderer.resize(win.devicePixelRatio);
-    }).observe(canvas);
+    new win.ResizeObserver(() => renderer.resize(win.devicePixelRatio)).observe(canvas);
   }
   win.matchMedia?.('(prefers-color-scheme: dark)').addEventListener?.('change', renderer.paintLawn);
 

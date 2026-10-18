@@ -86,3 +86,21 @@ describe('the stylesheet', () => {
     expect(css).toMatch(/html\.input-touch \.for-touch,\s*html\.input-keys \.for-keys \{\s*display: inline;/);
   });
 });
+
+describe('a phone turned sideways', () => {
+  const css = readFileSync(resolve(__dirname, '../public/styles.css'), 'utf8');
+  const rules = css.slice(css.indexOf('@media (orientation: landscape) and (max-height: 520px)'));
+
+  it('has its own layout for short, wide screens', () => {
+    expect(css).toContain('@media (orientation: landscape) and (max-height: 520px)');
+  });
+
+  it('fits the garden to the height of the screen', () => {
+    expect(rules).toMatch(/#field \{[^}]*height: calc\(100dvh/);
+    expect(rules).toMatch(/#field \{[^}]*width: auto;/);
+  });
+
+  it('hides the title and directions on the game page to make room', () => {
+    expect(rules).toMatch(/body:not\(\.home\) h1,\s*body:not\(\.home\) \.hint \{\s*display: none;/);
+  });
+});

@@ -119,6 +119,40 @@ h1 {
   }
 }
 
+/* A phone turned sideways: the screen is wide but short, so fit the garden
+   to the screen's height instead of its width, and hide the title and the
+   directions to make room, leaving just the garden and the level line. */
+@media (orientation: landscape) and (max-height: 520px) {
+  body:not(.home) {
+    padding-block: max(6px, env(safe-area-inset-top, 0px)) max(6px, env(safe-area-inset-bottom, 0px));
+  }
+
+  body:not(.home) main {
+    gap: 6px;
+  }
+
+  body:not(.home) h1,
+  body:not(.home) .hint {
+    display: none;
+  }
+
+  .garden {
+    width: auto;
+  }
+
+  #field {
+    width: auto;
+    height: calc(100vh - 48px);
+    height: calc(100dvh - 48px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    max-width: 100%;
+    border-radius: 18px;
+  }
+
+  .circle-count {
+    font-size: 1rem;
+  }
+}
+
 /* The level and how long she is, under the garden, like PetriPals'
    "Level 1 · 1 / 4 cells". */
 .circle-count {
