@@ -9,8 +9,8 @@ export const START_HUE = 275; // the purple circle she starts with behind her he
 // Each level: how many rocks and mushrooms are on the grass, and how many
 // circles long she has to grow to finish it. She keeps her circles from one
 // level to the next, so each level means growing 20 more: level 1 has 3
-// obstacles and is played to 20, up to 9 obstacles and 140 circles on level 7.
-export const LEVELS = Array.from({ length: 7 }, (_, i) => ({ obstacles: 3 + i, goal: 20 * (i + 1) }));
+// obstacles and is played to 20, up to 10 obstacles and 160 circles on level 8.
+export const LEVELS = Array.from({ length: 8 }, (_, i) => ({ obstacles: 3 + i, goal: 20 * (i + 1) }));
 
 // How long the pop-up waits after a bump, so you can see what happened.
 export const GAME_OVER_DELAY_MS = 600;
