@@ -80,6 +80,10 @@ describe('being found on Google', () => {
     expect(listed).toContain(url);
   });
 
+  it('has the Google Search Console verification file, published at the site root', () => {
+    expect(read('google32efa8321a61b455.html').trim()).toBe('google-site-verification: google32efa8321a61b455.html');
+  });
+
   it.each(['index.html', 'play.html'])('gives %s a title and a description', (page) => {
     const html = read(page);
     expect(html.match(/<title>([^<]+)<\/title>/)?.[1]).toMatch(/Snackerpillar/);
