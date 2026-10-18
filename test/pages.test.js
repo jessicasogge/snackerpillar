@@ -62,3 +62,27 @@ describe('counting visits on GoatCounter', () => {
     expect(tag?.[2]).toBe('https://gc.zgo.at/count.js');
   });
 });
+
+describe('being found on Google', () => {
+  const base = 'https://jessicasogge.github.io/snackerpillar/';
+  const sitemap = read('sitemap.xml');
+  const listed = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+
+  it('lists both pages in the sitemap', () => {
+    expect(listed).toEqual([base, `${base}play.html`]);
+  });
+
+  it.each([
+    ['index.html', base],
+    ['play.html', `${base}play.html`],
+  ])('gives %s its own canonical address, the one in the sitemap', (page, url) => {
+    expect(read(page).match(/<link rel="canonical" href="([^"]+)">/)?.[1]).toBe(url);
+    expect(listed).toContain(url);
+  });
+
+  it.each(['index.html', 'play.html'])('gives %s a title and a description', (page) => {
+    const html = read(page);
+    expect(html.match(/<title>([^<]+)<\/title>/)?.[1]).toMatch(/Snackerpillar/);
+    expect(html.match(/<meta name="description" content="([^"]+)">/)?.[1].length).toBeGreaterThan(40);
+  });
+});

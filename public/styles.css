@@ -119,34 +119,47 @@ h1 {
   }
 }
 
-.bar {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 10px 16px;
+/* A phone turned sideways: the screen is wide but short, so fit the garden
+   to the screen's height instead of its width, and hide the title and the
+   directions to make room, leaving just the garden and the level line. */
+@media (orientation: landscape) and (max-height: 520px) {
+  body:not(.home) {
+    padding-block: max(6px, env(safe-area-inset-top, 0px)) max(6px, env(safe-area-inset-bottom, 0px));
+  }
+
+  body:not(.home) main {
+    gap: 6px;
+  }
+
+  body:not(.home) h1,
+  body:not(.home) .hint {
+    display: none;
+  }
+
+  .garden {
+    width: auto;
+  }
+
+  #field {
+    width: auto;
+    height: calc(100vh - 48px);
+    height: calc(100dvh - 48px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    max-width: 100%;
+    border-radius: 18px;
+  }
+
+  .circle-count {
+    font-size: 1rem;
+  }
 }
 
-.tally {
-  font-family: var(--display);
-  font-weight: 600;
+/* The level and how long she is, under the garden, like PetriPals'
+   "Level 1 · 1 / 4 cells". */
+.circle-count {
+  margin: 0;
+  font-weight: 700;
   font-size: 1.15rem;
   font-variant-numeric: tabular-nums;
-}
-
-.tally .level {
-  margin-right: 6px;
-  padding: 2px 10px;
-  border-radius: 999px;
-  background: var(--accent);
-  color: #2b1a05;
-  font-size: 0.95rem;
-}
-
-.tally small {
-  font-family: var(--body);
-  font-size: 0.85rem;
-  color: var(--muted);
 }
 
 button {

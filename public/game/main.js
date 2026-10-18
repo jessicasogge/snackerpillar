@@ -16,9 +16,7 @@ const BUMPED = {
 // Returns a few handles for tests.
 export function startGame({ doc = document, win = window } = {}) {
   const canvas = doc.getElementById('field');
-  const levelEl = doc.getElementById('level');
-  const countEl = doc.getElementById('count');
-  const unitEl = doc.getElementById('unit');
+  const countEl = doc.getElementById('circle-count');
   const banner = doc.getElementById('banner');
   const bannerTitle = doc.getElementById('banner-title');
   const bannerMessage = doc.getElementById('banner-message');
@@ -31,7 +29,13 @@ export function startGame({ doc = document, win = window } = {}) {
     return { light: read('--field-1', '#b8de86'), shade: read('--field-2', '#8fc566'), blade: read('--blade', 'rgba(60, 110, 40, 0.28)') };
   };
   const renderer = makeRenderer(canvas, { colors, reduceMotion, makeCanvas: () => doc.createElement('canvas') });
-  let halfH = renderer.resize(win.devicePixelRatio);
+  // The garden's shape (its height over its width, halved) is picked once,
+  // from how the page first lays it out: square on a phone held upright,
+  // 4:3 everywhere else. It then stays that shape for the whole game, even
+  // if the phone is turned, so nothing ends up outside the garden; on a
+  // phone turned sideways, the stylesheet fits it to the screen's height.
+  const halfH = renderer.resize(win.devicePixelRatio);
+  canvas.style.aspectRatio = `2 / ${2 * halfH}`; // the field is 2 wide and 2 * halfH tall
   watchInputMode(doc.documentElement, win);
 
   let state;
@@ -55,9 +59,7 @@ export function startGame({ doc = document, win = window } = {}) {
 
   // The level, and how long she is out of how long she needs to be.
   function showCount() {
-    levelEl.textContent = `Level ${state.level}`;
-    countEl.textContent = String(length(state));
-    unitEl.textContent = `/ ${state.goal} circles`;
+    countEl.textContent = `Level ${state.level} · ${length(state)} / ${state.goal} circles`;
   }
 
   function showBanner(title, message, button) {
@@ -119,9 +121,7 @@ export function startGame({ doc = document, win = window } = {}) {
   playButton.addEventListener('click', () => play(next));
 
   if (win.ResizeObserver) {
-    new win.ResizeObserver(() => {
-      halfH = renderer.resize(win.devicePixelRatio);
-    }).observe(canvas);
+    new win.ResizeObserver(() => renderer.resize(win.devicePixelRatio)).observe(canvas);
   }
   win.matchMedia?.('(prefers-color-scheme: dark)').addEventListener?.('change', renderer.paintLawn);
 
