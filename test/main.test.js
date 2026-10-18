@@ -34,6 +34,11 @@ afterEach(() => {
 });
 
 const text = (id) => document.getElementById(id).textContent;
+// The line under the garden, like "Level 1 · 2 / 20 circles", in parts.
+const shown = () => {
+  const [, level, count, goal] = text('circle-count').match(/^Level (\d+) · (\d+) \/ (\d+) circles$/);
+  return { level, count, goal };
+};
 const key = (type, k) => window.dispatchEvent(new KeyboardEvent(type, { key: k, cancelable: true }));
 const pointer = (type, x, y, id = 1) => {
   const e = new Event(type, { bubbles: true });
@@ -77,9 +82,9 @@ function reach(game, level) {
 describe('the page', () => {
   it('starts on level 1 with a two-circle caterpillar and no pop-up', () => {
     startGame();
-    expect(text('level')).toBe('Level 1');
-    expect(text('count')).toBe('2');
-    expect(text('unit')).toBe('/ 20 circles');
+    expect(shown().level).toBe('1');
+    expect(shown().count).toBe('2');
+    expect(shown().goal).toBe('20');
     expect(banner().hidden).toBe(true);
   });
 
@@ -137,8 +142,8 @@ describe('the length counter', () => {
     game.state.obstacles = [];
     game.state.snacks = [{ x: 0, y: -0.06, r: 0.02, hue: 50, born: 0, eatenAt: null }];
     game.tick(0.05);
-    expect(text('count')).toBe('3');
-    expect(text('unit')).toBe('/ 20 circles');
+    expect(shown().count).toBe('3');
+    expect(shown().goal).toBe('20');
   });
 });
 
@@ -170,9 +175,9 @@ describe('winning a level', () => {
     const hues = game.state.body.map((c) => c.hue);
     click('play-again');
     expect(banner().hidden).toBe(true);
-    expect(text('level')).toBe('Level 2');
-    expect(text('count')).toBe('20');
-    expect(text('unit')).toBe('/ 40 circles');
+    expect(shown().level).toBe('2');
+    expect(shown().count).toBe('20');
+    expect(shown().goal).toBe('40');
     expect(game.state.body.map((c) => c.hue)).toEqual(hues);
     expect(game.state.obstacles).toHaveLength(4);
   });
@@ -192,9 +197,9 @@ describe('winning a level', () => {
   it('goes up to level 8, played to 160 circles', () => {
     const game = startGame();
     reach(game, 8);
-    expect(text('level')).toBe('Level 8');
-    expect(text('count')).toBe('140');
-    expect(text('unit')).toBe('/ 160 circles');
+    expect(shown().level).toBe('8');
+    expect(shown().count).toBe('140');
+    expect(shown().goal).toBe('160');
     expect(game.state.obstacles).toHaveLength(10);
   });
 
@@ -206,9 +211,9 @@ describe('winning a level', () => {
     expect(text('banner-message')).toBe('You beat all 8 levels with a caterpillar 160 circles long!');
     expect(text('play-again')).toBe('Play again');
     click('play-again');
-    expect(text('level')).toBe('Level 1');
-    expect(text('count')).toBe('2');
-    expect(text('unit')).toBe('/ 20 circles');
+    expect(shown().level).toBe('1');
+    expect(shown().count).toBe('2');
+    expect(shown().goal).toBe('20');
   });
 });
 
@@ -236,8 +241,8 @@ describe('game over', () => {
     click('play-again');
     expect(game.state.level).toBe(1);
     expect(game.state.over).toBeNull();
-    expect(text('level')).toBe('Level 1');
-    expect(text('count')).toBe('2');
+    expect(shown().level).toBe('1');
+    expect(shown().count).toBe('2');
     expect(banner().hidden).toBe(true);
   });
 
@@ -267,7 +272,13 @@ describe('game over', () => {
 describe('under the garden', () => {
   it('has just the level and the counter, with no Start over button', () => {
     expect(document.getElementById('restart')).toBeNull();
-    expect(document.querySelector('.bar').querySelectorAll('button')).toHaveLength(0);
+    expect(document.querySelector('main > button')).toBeNull();
+  });
+
+  it('shows the level and her length on one line, like PetriPals', () => {
+    startGame();
+    expect(text('circle-count')).toBe('Level 1 · 2 / 20 circles');
+    expect(document.getElementById('circle-count').getAttribute('aria-live')).toBe('polite');
   });
 });
 

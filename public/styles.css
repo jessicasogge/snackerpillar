@@ -119,34 +119,13 @@ h1 {
   }
 }
 
-.bar {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 10px 16px;
-}
-
-.tally {
-  font-family: var(--display);
-  font-weight: 600;
+/* The level and how long she is, under the garden, like PetriPals'
+   "Level 1 · 1 / 4 cells". */
+.circle-count {
+  margin: 0;
+  font-weight: 700;
   font-size: 1.15rem;
   font-variant-numeric: tabular-nums;
-}
-
-.tally .level {
-  margin-right: 6px;
-  padding: 2px 10px;
-  border-radius: 999px;
-  background: var(--accent);
-  color: #2b1a05;
-  font-size: 0.95rem;
-}
-
-.tally small {
-  font-family: var(--body);
-  font-size: 0.85rem;
-  color: var(--muted);
 }
 
 button {

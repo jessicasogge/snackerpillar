@@ -16,9 +16,7 @@ const BUMPED = {
 // Returns a few handles for tests.
 export function startGame({ doc = document, win = window } = {}) {
   const canvas = doc.getElementById('field');
-  const levelEl = doc.getElementById('level');
-  const countEl = doc.getElementById('count');
-  const unitEl = doc.getElementById('unit');
+  const countEl = doc.getElementById('circle-count');
   const banner = doc.getElementById('banner');
   const bannerTitle = doc.getElementById('banner-title');
   const bannerMessage = doc.getElementById('banner-message');
@@ -55,9 +53,7 @@ export function startGame({ doc = document, win = window } = {}) {
 
   // The level, and how long she is out of how long she needs to be.
   function showCount() {
-    levelEl.textContent = `Level ${state.level}`;
-    countEl.textContent = String(length(state));
-    unitEl.textContent = `/ ${state.goal} circles`;
+    countEl.textContent = `Level ${state.level} · ${length(state)} / ${state.goal} circles`;
   }
 
   function showBanner(title, message, button) {
