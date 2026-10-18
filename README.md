@@ -80,14 +80,6 @@ Tests live in `test/` and run with [Vitest](https://vitest.dev/). GitHub Actions
 
 Both pages load [GoatCounter](https://www.goatcounter.com/) to count visits, sharing PetriPals' site at https://petripals.goatcounter.com. Snackerpillar's visits show up there under paths starting with `/snackerpillar/`. It uses no cookies and collects nothing personal.
 
-## Being found on Google
-
-Like PetriPals, both pages have a title, a description and a canonical address, and `public/sitemap.xml` lists them for search engines. To get Snackerpillar into Google:
-
-1. In [Google Search Console](https://search.google.com/search-console), add a **URL prefix** property for `https://jessicasogge.github.io/snackerpillar/`.
-2. Choose **HTML file** to verify, download the file Google gives you (named like `google1234abcd.html`), put it in `public/`, and push. Once it's published, press **Verify**.
-3. Under **Sitemaps**, submit `https://jessicasogge.github.io/snackerpillar/sitemap.xml`.
-
 ## Publishing
 
 Every push to `main` publishes the game to [GitHub Pages](https://jessicasogge.github.io/snackerpillar/) (`.github/workflows/pages.yml`). The tests and typecheck run first, and if they fail nothing is published. Pages serves the `public/` folder as is, with no server. You can also rerun it by hand from the Actions tab.
