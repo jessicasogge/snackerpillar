@@ -12,7 +12,7 @@ A browser game about a very hungry caterpillar made of circles. Every dot she ea
 
 ### Levels
 
-There are 8 levels, and she keeps every circle she's grown from one level to the next. Each level adds one more obstacle and asks her to grow 20 more circles:
+There are 9 levels, and she keeps every circle she's grown from one level to the next. Each level adds one more obstacle and asks her to grow 20 more circles:
 
 | Level | Obstacles | Grow to |
 |---|---|---|
@@ -24,12 +24,13 @@ There are 8 levels, and she keeps every circle she's grown from one level to the
 | 6 | 8 | 120 circles |
 | 7 | 9 | 140 circles |
 | 8 | 10 | 160 circles |
+| 9 | 11 | 180 circles |
 
 Each new level picks up exactly where the last one ended: she's in the same spot, facing the same way, with all her circles showing, and the rocks, mushrooms and dots stay where they were. One more obstacle is added, clear of her body, the way ahead of her face, and the dots.
 
 At the end of every level, a pop-up tells you how it went:
 
-- **Level complete:** **Play level 2** (and so on) takes you to the next level, with all her circles. After level 8, **Play again** goes back to level 1.
+- **Level complete:** **Play level 2** (and so on) takes you to the next level, with all her circles. After level 9, **Play again** goes back to level 1.
 - **Game over:** it says what she ran into, and **Start over** goes back to level 1 with just 2 circles. There's no trying a level again.
 
 The levels are set in `LEVELS` in `public/game/config.js`.
