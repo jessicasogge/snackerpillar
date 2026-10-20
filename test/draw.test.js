@@ -5,6 +5,7 @@ import { newGame } from '../public/game/game.js';
 // A stand-in for a canvas's 2D context that records what was called.
 function fakeContext() {
   const calls = [];
+  const styles = []; // every fillStyle set, in order
   const ctx = new Proxy({}, {
     get(target, name) {
       if (name in target) return target[name];
@@ -13,26 +14,36 @@ function fakeContext() {
     },
     set(target, name, value) {
       target[name] = value;
+      if (name === 'fillStyle') styles.push(value);
       return true;
     },
   });
-  return { ctx, calls };
+  return { ctx, calls, styles };
 }
 
 function fakeCanvas(width = 600, height = 450) {
-  const { ctx, calls } = fakeContext();
-  return { clientWidth: width, clientHeight: height, width: 0, height: 0, getContext: () => ctx, calls };
+  const { ctx, calls, styles } = fakeContext();
+  return { clientWidth: width, clientHeight: height, width: 0, height: 0, getContext: () => ctx, calls, styles };
 }
 
+// The first canvas the renderer makes is the lawn; the rest are the sprites
+// it draws each color of circle on.
 function setup(opts = {}) {
   const canvas = fakeCanvas(opts.width, opts.height);
   const lawn = fakeCanvas();
+  const sprites = [];
+  let made = 0;
   const renderer = makeRenderer(canvas, {
     colors: () => ({ light: '#cfc', shade: '#9c9', blade: 'green' }),
-    makeCanvas: () => lawn,
+    makeCanvas: () => {
+      if (made++ === 0) return lawn;
+      const sprite = fakeCanvas();
+      sprites.push(sprite);
+      return sprite;
+    },
     reduceMotion: opts.reduceMotion,
   });
-  return { canvas, lawn, renderer };
+  return { canvas, lawn, sprites, renderer };
 }
 
 describe('resize', () => {
@@ -90,18 +101,34 @@ describe('draw', () => {
   });
 
   it('colors each body circle like the dot she ate', () => {
-    const { canvas, renderer } = setup();
+    const { sprites, renderer } = setup();
     renderer.resize(1);
-    const fills = [];
-    const ctx = canvas.getContext();
-    const realArc = ctx.arc;
-    ctx.arc = (...args) => {
-      fills.push(ctx.fillStyle);
-      return realArc(...args);
-    };
     renderer.draw(state);
-    expect(fills.some((f) => f?.startsWith?.('hsl(120 '))).toBe(true);
-    expect(fills.some((f) => f?.startsWith?.('hsl(280 '))).toBe(true);
+    const fills = sprites.flatMap((s) => s.styles);
+    expect(fills).toContain('hsl(120 72% 64%)');
+    expect(fills).toContain('hsl(280 72% 64%)');
+  });
+
+  it('draws each color of circle once, then copies it', () => {
+    const { canvas, sprites, renderer } = setup();
+    renderer.resize(1);
+    const many = { ...state, body: Array.from({ length: 30 }, (_, i) => ({ hue: i % 2 ? 120 : 280, born: -10 })), trail: [{ x: 0, y: 3 }, { x: 0, y: 0 }] };
+    renderer.draw(many);
+    renderer.draw(many);
+    expect(sprites).toHaveLength(3); // green, purple, and her orange head
+    // Every circle (and her head) is a copy of a sprite, both times.
+    expect(canvas.calls.filter((c) => c[0] === 'drawImage' && c[1] !== undefined && sprites.some((s) => s === c[1]))).toHaveLength(2 * 31);
+  });
+
+  it('draws the circles again, crisp, after the garden is resized', () => {
+    const { sprites, renderer } = setup();
+    renderer.resize(1);
+    renderer.draw(state);
+    const before = sprites.length;
+    renderer.resize(2);
+    renderer.draw(state);
+    expect(sprites.length).toBe(2 * before);
+    expect(sprites.at(-1).width).toBeGreaterThan(sprites[0].width);
   });
 
   it('draws dizzy X eyes once the game is over', () => {
@@ -119,8 +146,8 @@ describe('draw', () => {
   });
 
   it("doesn't draw circles that haven't followed her out yet", () => {
-    const circles = (st) => drawn(st).calls.filter((c) => c[0] === 'arc').length;
-    const short = { ...state, body: state.body.map((c) => ({ ...c, born: -10 })), trail: [{ x: 0, y: 0 }, { x: 0, y: 0.2 }] };
+    const circles = (st) => drawn(st).calls.filter((c) => c[0] === 'drawImage').length;
+    const short = { ...state, body: state.body.map((c) => ({ ...c, born: -10 })), trail: [{ x: 0, y: 0.2 }, { x: 0, y: 0 }] };
     const longBody = { ...short, body: [...short.body, ...Array.from({ length: 20 }, () => ({ hue: 0, born: -10 }))] };
     expect(circles(longBody)).toBe(circles(short));
   });

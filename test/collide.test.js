@@ -34,8 +34,9 @@ describe('obstacleHit', () => {
 });
 
 describe('tailHit', () => {
-  // A straight trail going right from the head at (0, 0).
-  const straight = Array.from({ length: 40 }, (_, i) => ({ x: i * 0.02, y: 0 }));
+  // A straight trail going right from the head at (0, 0) (the head's spot
+  // comes last).
+  const straight = Array.from({ length: 40 }, (_, i) => ({ x: i * 0.02, y: 0 })).reverse();
 
   it("doesn't count her own body when she's going straight", () => {
     expect(tailHit({ x: 0, y: 0 }, straight, 10)).toBe(false);

@@ -255,7 +255,7 @@ describe('game over', () => {
     // Make the next step a tail bump: her trail runs down and back up to her
     // head, so the far end of her 9-circle body sits right on it.
     game.state.body = Array.from({ length: 8 }, () => ({ hue: 0, born: -1 }));
-    game.state.trail = Array.from({ length: 60 }, (_, i) => ({ x: game.state.head.x, y: game.state.head.y + (i < 30 ? i : 60 - i) * 0.01 }));
+    game.state.trail = Array.from({ length: 60 }, (_, i) => ({ x: game.state.head.x, y: game.state.head.y + (i < 30 ? i : 60 - i) * 0.01 })).reverse();
     game.tick(0.01);
     vi.advanceTimersByTime(GAME_OVER_DELAY_MS);
     expect(text('banner-message')).toBe('Bonk! She ran into her own tail. Back to level 1!');
