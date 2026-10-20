@@ -1,9 +1,8 @@
 import { CELL_R, HEAD_HUE, SPACING } from './config.js';
 import { spotsAlong } from './trail.js';
 
-// Draws the game on a canvas: the lawn, the dots, the obstacles and her.
-// `colors` returns the lawn's colors ({ light, shade, blade }), read from the
-// page's theme, so the lawn can be repainted when the theme changes.
+// Draws the game on canvas; `colors` returns theme-based lawn colors
+// ({ light, shade, blade }) for repainting on theme changes.
 export function makeRenderer(canvas, { colors, reduceMotion = false, makeCanvas = () => document.createElement('canvas') }) {
   const ctx = canvas.getContext('2d');
   const lawn = makeCanvas();
@@ -13,12 +12,8 @@ export function makeRenderer(canvas, { colors, reduceMotion = false, makeCanvas 
   let scale = 1;
   const px = (v) => v * scale;
 
-  // Each color of circle is drawn once onto a little canvas of its own (a
-  // sprite), then copied wherever a circle of that color goes: much quicker
-  // than drawing every circle's shadow, outline and shine from scratch each
-  // frame. Sprites are drawn a little bigger than a body circle (SPRITE_SIZE)
-  // so the head, and new circles popping in, are shrunk copies, not blurry
-  // stretched ones.
+  // Cache each color as a sprite to avoid redrawing effects every frame.
+  // Oversized sprites (SPRITE_SIZE) keep the head and pop-in circles sharp.
   const SPRITE_SIZE = 1.25;
   const sprites = new Map();
   function spriteFor(hue) {
@@ -266,10 +261,8 @@ export function makeRenderer(canvas, { colors, reduceMotion = false, makeCanvas 
     ctx.translate(w / 2, h / 2);
     for (const s of state.snacks) drawSnack(s, time);
     for (const o of state.obstacles) drawObstacle(o);
-    // Tail first, so each circle tucks under the one in front of it. A circle
-    // with no trail to sit on yet isn't drawn (and can't be bumped into; see
-    // tailHit). That only happens for a moment, if ever: when she's just
-    // eaten and hasn't crawled far enough for the new circle's spot.
+    // Draw tail first so circles tuck under those ahead.
+    // Skip new circles until they have trail positions (also ignored by tailHit).
     const spots = spotsAlong(state.trail, SPACING, state.body.length);
     for (let i = spots.length - 1; i >= 0; i--) {
       const seg = state.body[i];
