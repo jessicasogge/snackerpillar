@@ -1,9 +1,8 @@
 import { CELL_R, HEAD_HUE, SPACING } from './config.js';
-import { pointAlong, trailLength } from './trail.js';
+import { spotsAlong } from './trail.js';
 
-// Draws the game on a canvas: the lawn, the dots, the obstacles and her.
-// `colors` returns the lawn's colors ({ light, shade, blade }), read from the
-// page's theme, so the lawn can be repainted when the theme changes.
+// Draws the game on canvas; `colors` returns theme-based lawn colors
+// ({ light, shade, blade }) for repainting on theme changes.
 export function makeRenderer(canvas, { colors, reduceMotion = false, makeCanvas = () => document.createElement('canvas') }) {
   const ctx = canvas.getContext('2d');
   const lawn = makeCanvas();
@@ -13,6 +12,41 @@ export function makeRenderer(canvas, { colors, reduceMotion = false, makeCanvas 
   let scale = 1;
   const px = (v) => v * scale;
 
+  // Cache each color as a sprite to avoid redrawing effects every frame.
+  // Oversized sprites (SPRITE_SIZE) keep the head and pop-in circles sharp.
+  const SPRITE_SIZE = 1.25;
+  const sprites = new Map();
+  function spriteFor(hue) {
+    let sprite = sprites.get(hue);
+    if (sprite) return sprite;
+    const r = px(CELL_R) * SPRITE_SIZE;
+    const side = Math.ceil(r * 2.7); // room for the outline and the shadow below
+    const c = makeCanvas();
+    c.width = Math.ceil(side * dpr);
+    c.height = Math.ceil(side * dpr);
+    const g = c.getContext('2d');
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g.translate(side / 2, side / 2);
+    g.beginPath();
+    g.ellipse(r * 0.12, r * 0.3, r * 1.02, r * 0.9, 0, 0, Math.PI * 2);
+    g.fillStyle = 'rgba(30, 50, 20, 0.16)';
+    g.fill();
+    g.beginPath();
+    g.arc(0, 0, r, 0, Math.PI * 2);
+    g.fillStyle = `hsl(${hue} 72% 64%)`;
+    g.fill();
+    g.lineWidth = Math.max(1.5, r * 0.17);
+    g.strokeStyle = `hsl(${hue} 55% 32%)`;
+    g.stroke();
+    g.beginPath();
+    g.arc(-r * 0.3, -r * 0.36, r * 0.17, 0, Math.PI * 2);
+    g.fillStyle = `hsl(${hue} 90% 88%)`;
+    g.fill();
+    sprite = { canvas: c, side };
+    sprites.set(hue, sprite);
+    return sprite;
+  }
+
   // Match the canvas to its size on screen. Returns the field's halfH.
   function resize(devicePixelRatio = 1) {
     dpr = Math.min(devicePixelRatio || 1, 2);
@@ -21,6 +55,7 @@ export function makeRenderer(canvas, { colors, reduceMotion = false, makeCanvas 
     canvas.width = Math.round(w * dpr);
     canvas.height = Math.round(h * dpr);
     scale = w / 2;
+    sprites.clear(); // circles are drawn for the new size when next needed
     paintLawn();
     return w ? h / w : 0.75;
   }
@@ -150,26 +185,13 @@ export function makeRenderer(canvas, { colors, reduceMotion = false, makeCanvas 
 
   // One body circle, with a darker outline, a little shine, and a soft shadow.
   function drawCircle(x, y, hue, size, wobble) {
-    const r = px(CELL_R) * size;
-    if (r <= 0.5) return;
+    if (px(CELL_R) * size <= 0.5) return;
+    const sprite = spriteFor(hue);
+    const side = (sprite.side * size) / SPRITE_SIZE;
     ctx.save();
     ctx.translate(px(x), px(y));
-    ctx.beginPath();
-    ctx.ellipse(r * 0.12, r * 0.3, r * 1.02, r * 0.9, 0, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(30, 50, 20, 0.16)';
-    ctx.fill();
     ctx.scale(1 + wobble, 1 - wobble);
-    ctx.beginPath();
-    ctx.arc(0, 0, r, 0, Math.PI * 2);
-    ctx.fillStyle = `hsl(${hue} 72% 64%)`;
-    ctx.fill();
-    ctx.lineWidth = Math.max(1.5, r * 0.17);
-    ctx.strokeStyle = `hsl(${hue} 55% 32%)`;
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(-r * 0.3, -r * 0.36, r * 0.17, 0, Math.PI * 2);
-    ctx.fillStyle = `hsl(${hue} 90% 88%)`;
-    ctx.fill();
+    ctx.drawImage(sprite.canvas, -side / 2, -side / 2, side, side);
     ctx.restore();
   }
 
@@ -239,17 +261,13 @@ export function makeRenderer(canvas, { colors, reduceMotion = false, makeCanvas 
     ctx.translate(w / 2, h / 2);
     for (const s of state.snacks) drawSnack(s, time);
     for (const o of state.obstacles) drawObstacle(o);
-    // Tail first, so each circle tucks under the one in front of it. A circle
-    // with no trail to sit on yet isn't drawn (and can't be bumped into; see
-    // tailHit). That only happens for a moment, if ever: when she's just
-    // eaten and hasn't crawled far enough for the new circle's spot.
-    const out = trailLength(state.trail);
-    for (let i = state.body.length - 1; i >= 0; i--) {
-      if ((i + 1) * SPACING > out + 1e-9) continue;
+    // Draw tail first so circles tuck under those ahead.
+    // Skip new circles until they have trail positions (also ignored by tailHit).
+    const spots = spotsAlong(state.trail, SPACING, state.body.length);
+    for (let i = spots.length - 1; i >= 0; i--) {
       const seg = state.body[i];
-      const p = pointAlong(state.trail, (i + 1) * SPACING);
       const wob = reduceMotion ? 0 : Math.sin(time * 6 - i * 0.7) * 0.035;
-      drawCircle(p.x, p.y, seg.hue, popSize(time - seg.born), wob);
+      drawCircle(spots[i].x, spots[i].y, seg.hue, popSize(time - seg.born), wob);
     }
     drawCircle(state.head.x, state.head.y, HEAD_HUE, 1.1, 0);
     drawFace(state.head, time, state.over);

@@ -2,7 +2,7 @@ import { LEVELS, RESPAWN_SECONDS, SNACKS, SPACING, START_HUE } from './config.js
 import { obstacleHit, tailHit, touchesSnack } from './collide.js';
 import { keepInField, newSnack, placeObstacles } from './field.js';
 import { steer } from './steer.js';
-import { extendTrail, pointAlong, trimTrail } from './trail.js';
+import { extendTrail, spotsAlong, trimTrail } from './trail.js';
 
 // A level (1 to 9), with that level's obstacles and the dots scattered
 // around her. On level 1 she's in the middle facing up, with one purple
@@ -28,9 +28,9 @@ export function newGame({ halfH, level = 1, from = null, rand = Math.random }) {
     over: null, // what she ran into, once the game is over
     won: false, // whether she grew long enough to finish the level
   };
-  // On level 1, a short straight trail below her, so her first circle has
-  // somewhere to sit.
-  if (!from) for (let i = 1; i <= 12; i++) state.trail.push({ x: 0, y: (i * SPACING) / 6 });
+  // On level 1, a short straight trail below her (oldest point first, her
+  // head last), so her first circle has somewhere to sit.
+  if (!from) for (let i = 1; i <= 12; i++) state.trail.unshift({ x: 0, y: (i * SPACING) / 6 });
   if (from) {
     state.snacks = from.snacks.filter((s) => s.eatenAt === null).map((s) => ({ ...s, born: -1 }));
     state.respawns = from.respawns.map((t) => t - from.time);
@@ -41,11 +41,13 @@ export function newGame({ halfH, level = 1, from = null, rand = Math.random }) {
   return state;
 }
 
-// Where her head and each of her circles are.
+// Where her head and each of her circles are. A circle with no trail to
+// sit on yet counts as being at the trail's far end.
 export function herPoints(state) {
-  const points = [{ x: state.head.x, y: state.head.y }];
-  state.body.forEach((_, i) => points.push(pointAlong(state.trail, (i + 1) * SPACING)));
-  return points;
+  const spots = spotsAlong(state.trail, SPACING, state.body.length);
+  const end = state.trail[0];
+  while (spots.length < state.body.length) spots.push({ x: end.x, y: end.y });
+  return [{ x: state.head.x, y: state.head.y }, ...spots];
 }
 
 function addSnack(state, halfH, rand) {

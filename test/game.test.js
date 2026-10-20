@@ -43,6 +43,13 @@ describe('a new game', () => {
     expect(state.obstacles).toHaveLength(3);
   });
 
+  it('starts with her trail running straight down from her head, farthest point first', () => {
+    expect(state.trail.at(-1)).toEqual({ x: 0, y: 0 });
+    const ys = state.trail.map((p) => p.y);
+    expect(ys).toEqual([...ys].sort((a, b) => b - a));
+    expect(herPoints(state)[1].y).toBeCloseTo(SPACING);
+  });
+
   it('starts on level 1', () => {
     expect(state.level).toBe(1);
     expect(state.won).toBe(false);
@@ -313,7 +320,7 @@ describe('game over', () => {
     // She has just crawled around a small square loop, so her body curls back
     // to sit just in front of her head.
     state.head = { x: 0, y: 0, dir: 0 };
-    state.trail = densify([[0, 0], [0, 0.15], [0.15, 0.15], [0.15, 0], [0.04, 0], [-0.3, 0]]);
+    state.trail = densify([[0, 0], [0, 0.15], [0.15, 0.15], [0.15, 0], [0.04, 0], [-0.3, 0]]).reverse(); // head last
     for (let i = 0; i < 10 && !state.over; i++) step(state, { ...idle(), keys: new Set(['right']), dt: 0.02 });
     expect(state.over).toBe('tail');
   });
