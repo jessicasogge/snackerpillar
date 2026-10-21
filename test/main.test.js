@@ -69,11 +69,11 @@ function bump(game, kind = 'rock') {
   vi.advanceTimersByTime(GAME_OVER_DELAY_MS);
 }
 
-// Win levels until she's on `level` (at most 9 tries, so a mistake here
+// Win levels until she's on `level` (at most 10 tries, so a mistake here
 // fails the test rather than looping forever).
 function reach(game, level) {
   for (let tries = 0; game.state.level < level; tries++) {
-    if (tries >= 9) throw new Error(`couldn't reach level ${level}`);
+    if (tries >= 10) throw new Error(`couldn't reach level ${level}`);
     win(game);
     click('play-again');
   }
@@ -108,7 +108,7 @@ describe('the page', () => {
     expect(hint.querySelector('.for-touch').textContent).toMatch(/^Drag anywhere on the grass/);
     expect(hint.querySelector('.for-keys').textContent).not.toMatch(/touch|drag/i);
     expect(hint.querySelector('.for-touch').textContent).not.toMatch(/arrow|key/i);
-    expect(hint.textContent).toMatch(/all 9 levels/);
+    expect(hint.textContent).toMatch(/all 10 levels/);
     expect(hint.textContent).not.toMatch(/WASD|\bW\b/);
   });
 
@@ -194,21 +194,21 @@ describe('winning a level', () => {
     expect(game.state.body.at(-1).hue).toBe(333);
   });
 
-  it('goes up to level 9, played to 180 circles', () => {
+  it('goes up to level 10, played to 200 circles', () => {
     const game = startGame();
-    reach(game, 9);
-    expect(shown().level).toBe('9');
-    expect(shown().count).toBe('160');
-    expect(shown().goal).toBe('180');
-    expect(game.state.obstacles).toHaveLength(11);
+    reach(game, 10);
+    expect(shown().level).toBe('10');
+    expect(shown().count).toBe('180');
+    expect(shown().goal).toBe('200');
+    expect(game.state.obstacles).toHaveLength(12);
   });
 
-  it('celebrates beating level 9, then starts again from level 1 with 2 circles', () => {
+  it('celebrates beating level 10, then starts again from level 1 with 2 circles', () => {
     const game = startGame();
-    reach(game, 9);
+    reach(game, 10);
     win(game);
     expect(text('banner-title')).toBe('You won!');
-    expect(text('banner-message')).toBe('You beat all 9 levels with a caterpillar 180 circles long!');
+    expect(text('banner-message')).toBe('You beat all 10 levels with a caterpillar 200 circles long!');
     expect(text('play-again')).toBe('Play again');
     click('play-again');
     expect(shown().level).toBe('1');
