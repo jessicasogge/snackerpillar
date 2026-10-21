@@ -10,8 +10,8 @@ const read = (path) => readFileSync(resolve(pub, path), 'utf8');
 
 describe('working from a folder on GitHub Pages', () => {
   it.each([
-    ['index.html', ['favicon.svg', 'styles.css', 'game/home.js', 'play.html']],
-    ['play.html', ['favicon.svg', 'styles.css', 'game/main.js', './']],
+    ['index.html', ['favicon.svg', 'favicon-32.png', 'apple-touch-icon.png', 'styles.css', 'game/home.js', 'play.html']],
+    ['play.html', ['favicon.svg', 'favicon-32.png', 'apple-touch-icon.png', 'styles.css', 'game/main.js', './']],
   ])('links %s to its own files with relative paths', (page, expected) => {
     const links = [...read(page).matchAll(/(?:href|src)="([^"]+)"/g)].map((m) => m[1]);
     expect(links).toEqual(expect.arrayContaining(expected));
@@ -25,7 +25,10 @@ describe('working from a folder on GitHub Pages', () => {
   });
 
   it('imports the game modules with relative paths', () => {
-    for (const file of readdirSync(resolve(pub, 'game'))) {
+    // Every module, the copied-in confetti library under vendor/ included.
+    const files = readdirSync(resolve(pub, 'game'), { recursive: true }).filter((f) => f.endsWith('.js'));
+    expect(files).toContain('vendor/confetti.js');
+    for (const file of files) {
       const imports = [...read(`game/${file}`).matchAll(/from '([^']+)'/g)].map((m) => m[1]);
       for (const path of imports) expect(path).toMatch(/^\.\//);
     }
@@ -88,5 +91,21 @@ describe('being found on Google', () => {
     const html = read(page);
     expect(html.match(/<title>([^<]+)<\/title>/)?.[1]).toMatch(/Snackerpillar/);
     expect(html.match(/<meta name="description" content="([^"]+)">/)?.[1].length).toBeGreaterThan(40);
+  });
+});
+
+describe('icons', () => {
+  const size = (file) => {
+    const png = readFileSync(resolve(pub, file));
+    expect(png.subarray(1, 4).toString()).toBe('PNG');
+    return [png.readUInt32BE(16), png.readUInt32BE(20)];
+  };
+
+  it('has a 32 by 32 PNG favicon, for browsers that skip the SVG one', () => {
+    expect(size('favicon-32.png')).toEqual([32, 32]);
+  });
+
+  it('has a 180 by 180 icon for adding the game to an iPhone home screen', () => {
+    expect(size('apple-touch-icon.png')).toEqual([180, 180]);
   });
 });

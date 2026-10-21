@@ -217,6 +217,62 @@ describe('winning a level', () => {
   });
 });
 
+describe('celebrating', () => {
+  it('bursts dots out of her head, a little one for a level', () => {
+    const celebrate = vi.fn();
+    const game = startGame({ celebrate });
+    const field = document.getElementById('field');
+    field.getBoundingClientRect = () => ({ left: 100, top: 50, width: 600, height: 450 });
+    win(game);
+    expect(celebrate).toHaveBeenCalledTimes(1);
+    const [spot, options] = celebrate.mock.calls[0];
+    expect(options.big).toBe(false);
+    // Her head, turned into page pixels.
+    expect(spot.x).toBeCloseTo(100 + ((game.state.head.x + 1) / 2) * 600);
+    expect(spot.y).toBeCloseTo(50 + ((game.state.head.y + 0.75) / 1.5) * 450);
+  });
+
+  it('bursts big for beating the last level', () => {
+    const celebrate = vi.fn();
+    const game = startGame({ celebrate });
+    reach(game, 10);
+    celebrate.mockClear();
+    win(game);
+    expect(celebrate).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ big: true }));
+  });
+
+  it("doesn't burst for a bump", () => {
+    const celebrate = vi.fn();
+    bump(startGame({ celebrate }));
+    expect(celebrate).not.toHaveBeenCalled();
+  });
+});
+
+describe('the Tiny Game Arcade', () => {
+  const arcade = () => document.getElementById('banner-arcade');
+
+  it('is linked under the game', () => {
+    expect(document.querySelector('.arcade-link a').href).toBe('https://jessicasogge.github.io/tiny-game-arcade/');
+  });
+
+  it('is offered in the pop-up after the last level, and only then', () => {
+    const game = startGame({ celebrate: () => {} });
+    win(game);
+    expect(arcade().hidden).toBe(true);
+    click('play-again');
+    bump(game);
+    expect(arcade().hidden).toBe(true);
+    click('play-again');
+    reach(game, 10);
+    win(game);
+    expect(arcade().hidden).toBe(false);
+    expect(arcade().querySelector('a').href).toBe('https://jessicasogge.github.io/tiny-game-arcade/');
+    click('play-again');
+    win(game);
+    expect(arcade().hidden).toBe(true);
+  });
+});
+
 describe('game over', () => {
   it('shows a pop-up saying what she bumped into, after a moment to see it', () => {
     const game = startGame();

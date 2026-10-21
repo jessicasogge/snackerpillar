@@ -100,7 +100,7 @@ describe('a phone turned sideways', () => {
     expect(rules).toMatch(/#field \{[^}]*width: auto;/);
   });
 
-  it('hides the title and directions on the game page to make room', () => {
-    expect(rules).toMatch(/body:not\(\.home\) h1,\s*body:not\(\.home\) \.hint \{\s*display: none;/);
+  it('hides the title, directions and arcade link on the game page to make room', () => {
+    expect(rules).toMatch(/body:not\(\.home\) h1,\s*body:not\(\.home\) \.hint,\s*body:not\(\.home\) \.arcade-link \{\s*display: none;/);
   });
 });
