@@ -295,6 +295,29 @@ describe('eating', () => {
   });
 });
 
+describe('a crowded garden', () => {
+  it("doesn't lose a dot that has nowhere to go: it tries again until there's room", () => {
+    const state = gameWithSnackAhead();
+    state.snacks = [];
+    state.respawns = [0.01];
+    // Fill the garden with one giant rock, so there's nowhere for the dot.
+    state.obstacles = [{ x: 0, y: 0, r: 5, kind: 'rock' }];
+    const noKeys = { ...idle(), dt: 0.05 };
+    for (let i = 0; i < 30; i++) {
+      state.over = null; // she's inside the rock too; that's not what this tests
+      step(state, noKeys);
+    }
+    expect(state.snacks).toHaveLength(0);
+    expect(state.respawns).toHaveLength(1); // still waiting, not dropped
+    // Make room, and it comes back within a moment.
+    state.obstacles = [];
+    state.over = null;
+    for (let i = 0; i < 12; i++) step(state, noKeys);
+    expect(state.snacks).toHaveLength(1);
+    expect(state.respawns).toHaveLength(0);
+  });
+});
+
 describe('game over', () => {
   it('ends when she runs into a rock', () => {
     const state = gameWithSnackAhead();

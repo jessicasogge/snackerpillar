@@ -4,6 +4,8 @@ import { keepInField, newSnack, placeObstacles } from './field.js';
 import { steer } from './steer.js';
 import { extendTrail, spotsAlong, trimTrail } from './trail.js';
 
+const RETRY_SECONDS = 0.5; // how soon a dot with nowhere to go tries again
+
 // A level (1 to 10), with that level's obstacles and the dots scattered
 // around her. On level 1 she's in the middle facing up, with one purple
 // circle behind her head. On later levels, `from` is the level she just
@@ -50,9 +52,11 @@ export function herPoints(state) {
   return [{ x: state.head.x, y: state.head.y }, ...spots];
 }
 
+// Put a new dot somewhere free. Returns whether there was room for one.
 function addSnack(state, halfH, rand) {
   const snack = newSnack({ halfH, head: state.head, body: herPoints(state), snacks: state.snacks, obstacles: state.obstacles, time: state.time, rand });
   if (snack) state.snacks.push(snack);
+  return Boolean(snack);
 }
 
 // The body's length, counting the head.
@@ -86,11 +90,13 @@ export function step(state, { dt, keys, drag, halfH, rand = Math.random }) {
   }
   // Eaten dots linger a moment to shrink away.
   state.snacks = state.snacks.filter((s) => s.eatenAt === null || state.time - s.eatenAt < 0.3);
-  state.respawns = state.respawns.filter((t) => {
-    if (t > state.time) return true;
-    addSnack(state, halfH, rand);
-    return false;
-  });
+  // A dot that's due comes back. If the garden is too crowded for it right
+  // now (she can be very long by the last levels), it tries again a moment
+  // later, once she's moved, rather than being lost.
+  state.respawns = state.respawns.map((t) => {
+    if (t > state.time || addSnack(state, halfH, rand)) return t;
+    return state.time + RETRY_SECONDS;
+  }).filter((t) => t > state.time);
 
   if (length(state) >= state.goal) {
     state.won = true;

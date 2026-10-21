@@ -55,6 +55,7 @@ Then open <http://localhost:3007>. To use another port, set `PORT`, like `PORT=4
 | `npm test` | Runs the tests once |
 | `npm run test:watch` | Re-runs the tests as you edit |
 | `npm run typecheck` | Checks the server's TypeScript |
+| `npm run stress` | Plays through every level many times to check the garden never gets too crowded (about 30 seconds; run it when the levels change) |
 | `npm run build` then `npm start` | Builds the server and runs the built version |
 
 ## How it's put together
