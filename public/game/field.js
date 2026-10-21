@@ -74,7 +74,7 @@ function tryPlacing(halfH, count, gap, rand, clearOfHer, existing) {
 export function newSnack({ halfH, head, body = [], snacks, obstacles, time, rand = Math.random }) {
   const mx = 1 - 0.08;
   const my = halfH - 0.08;
-  for (let tries = 0; tries < 50; tries++) {
+  for (let tries = 0; tries < 100; tries++) {
     const x = (rand() * 2 - 1) * mx;
     const y = (rand() * 2 - 1) * my;
     const clearOfHead = Math.hypot(x - head.x, y - head.y) > 0.3;
