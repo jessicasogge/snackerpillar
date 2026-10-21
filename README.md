@@ -2,7 +2,9 @@
 
 A browser game about a very hungry caterpillar made of circles. Every dot she eats adds a new circle to her back, in that dot's color. Grow as long as you can, and don't bump into anything!
 
-**[▶ Play Snackerpillar](https://jessicasogge.github.io/snackerpillar/)**: works on computers, phones and tablets.
+**[▶ Play Snackerpillar](https://jessicasogge.github.io/snackerpillar/)**: works on computers, phones and tablets. A [Tiny Game Arcade](https://jessicasogge.github.io/tiny-game-arcade/) game.
+
+<img src="docs/screenshot.png" alt="Level 3: a rainbow caterpillar 34 circles long curving through the garden among colored dots, two rocks and three red mushrooms, above the line Level 3 · 34 / 60 circles" width="400"> <img src="docs/home.png" alt="The home page on a phone: a long rainbow caterpillar above the Snackerpillar logo, Eat the dots. Grow a rainbow., and an orange Press Start to Play button" width="200">
 
 ## How to play
 
@@ -31,7 +33,7 @@ Each new level picks up exactly where the last one ended: she's in the same spot
 
 At the end of every level, a pop-up tells you how it went:
 
-- **Level complete:** **Play level 2** (and so on) takes you to the next level, with all her circles. After level 10, **Play again** goes back to level 1.
+- **Level complete:** she bursts into rainbow dots, and **Play level 2** (and so on) takes you to the next level, with all her circles. After level 10, **Play again** goes back to level 1.
 - **Game over:** it says what she ran into, and **Start over** goes back to level 1 with just 2 circles. There's no trying a level again.
 
 The levels are set in `LEVELS` in `public/game/config.js`.
@@ -74,6 +76,7 @@ The game itself runs entirely in the browser, as plain JavaScript modules in `pu
 | `collide.js` | Whether she's touching a dot, an obstacle or her own body |
 | `draw.js` | Drawing the lawn, dots, rocks, mushrooms and her on the canvas |
 | `home.js` | Drawing the rainbow caterpillar on the home page and in the link-preview picture |
+| `burst.js` | The burst of rainbow dots when she finishes a level (using canvas-confetti, in `vendor/`) |
 | `input.js` | Showing the directions for the device you're on: arrow keys on a computer, dragging on a phone or tablet |
 | `main.js` | Connecting it all to the page: input, the animation loop, the level and length counter, and the end-of-level pop-up |
 
@@ -85,4 +88,6 @@ Every push to `main` publishes the game to [GitHub Pages](https://jessicasogge.g
 
 The first time, turn Pages on in the repo's **Settings → Pages** and set **Source** to **GitHub Actions**.
 
-The Fredoka and Nunito fonts are included under the SIL Open Font License (`public/fonts/*-OFL.txt`).
+## License
+
+Snackerpillar is released under the [MIT License](LICENSE). The rainbow-dot burst uses [canvas-confetti](https://github.com/catdad/canvas-confetti), which is ISC licensed ([`public/game/vendor/confetti.LICENSE`](public/game/vendor/confetti.LICENSE)). The Fredoka and Nunito fonts are included under the SIL Open Font License ([`public/fonts/`](public/fonts/)).

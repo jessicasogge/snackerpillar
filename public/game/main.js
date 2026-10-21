@@ -1,5 +1,6 @@
 import { GAME_OVER_DELAY_MS, LEVELS, WIN_DELAY_MS } from './config.js';
 import { hasNextLevel, length, newGame, step } from './game.js';
+import { dotBurst } from './burst.js';
 import { makeRenderer } from './draw.js';
 import { watchInputMode } from './input.js';
 
@@ -14,12 +15,14 @@ const BUMPED = {
 // Wire the game to the page: input, the animation loop, the level and length
 // counter, and the pop-up at the end of each level.
 // Returns a few handles for tests.
-export function startGame({ doc = document, win = window } = {}) {
+// `celebrate` bursts rainbow dots out of her when she finishes a level.
+export function startGame({ doc = document, win = window, celebrate = dotBurst } = {}) {
   const canvas = doc.getElementById('field');
   const countEl = doc.getElementById('circle-count');
   const banner = doc.getElementById('banner');
   const bannerTitle = doc.getElementById('banner-title');
   const bannerMessage = doc.getElementById('banner-message');
+  const bannerArcade = doc.getElementById('banner-arcade');
   const playButton = doc.getElementById('play-again');
   const reduceMotion = win.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
 
@@ -62,10 +65,22 @@ export function startGame({ doc = document, win = window } = {}) {
     countEl.textContent = `Level ${state.level} · ${length(state)} / ${state.goal} circles`;
   }
 
-  function showBanner(title, message, button) {
+  // Where her head is on the page, in pixels: the garden is 2 wide and
+  // 2 * halfH tall, centered on (0, 0).
+  function headOnPage() {
+    const box = canvas.getBoundingClientRect();
+    return {
+      x: box.left + ((state.head.x + 1) / 2) * box.width,
+      y: box.top + ((state.head.y + halfH) / (2 * halfH)) * box.height,
+    };
+  }
+
+  // `arcade` adds a link to the Tiny Game Arcade, for after the last level.
+  function showBanner(title, message, button, { arcade = false } = {}) {
     bannerTitle.textContent = title;
     bannerMessage.textContent = message;
     playButton.textContent = button;
+    bannerArcade.hidden = !arcade;
     banner.hidden = false;
     playButton.focus({ preventScroll: true });
   }
@@ -77,7 +92,7 @@ export function startGame({ doc = document, win = window } = {}) {
       showBanner(`Level ${state.level} complete!`, `She's ${n} circles long! Next, grow her to ${LEVELS[state.level].goal}.`, `Play level ${next.level}`);
     } else {
       next = { level: 1 };
-      showBanner('You won!', `You beat all ${LEVELS.length} levels with a caterpillar ${n} circles long!`, 'Play again');
+      showBanner('You won!', `You beat all ${LEVELS.length} levels with a caterpillar ${n} circles long!`, 'Play again', { arcade: true });
     }
   }
 
@@ -131,7 +146,10 @@ export function startGame({ doc = document, win = window } = {}) {
     const wasDone = state.over || state.won;
     const eaten = step(state, { dt: Math.max(0, Math.min(0.05, seconds)), keys, drag, halfH });
     if (eaten.length) showCount();
-    if (!wasDone && state.won) bannerTimer = win.setTimeout(showWin, WIN_DELAY_MS);
+    if (!wasDone && state.won) {
+      celebrate(headOnPage(), { big: !hasNextLevel(state), win });
+      bannerTimer = win.setTimeout(showWin, WIN_DELAY_MS);
+    }
     if (!wasDone && state.over) bannerTimer = win.setTimeout(showGameOver, GAME_OVER_DELAY_MS);
     renderer.draw(state);
   }

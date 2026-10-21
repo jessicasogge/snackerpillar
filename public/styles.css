@@ -132,7 +132,8 @@ h1 {
   }
 
   body:not(.home) h1,
-  body:not(.home) .hint {
+  body:not(.home) .hint,
+  body:not(.home) .arcade-link {
     display: none;
   }
 
@@ -421,4 +422,27 @@ body.home main {
   .start-btn {
     transition: none;
   }
+}
+
+/* Under the game, and in the pop-up after the last level: a link to the
+   other Tiny Game Arcade games. */
+.arcade-link {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.arcade-link a,
+.banner-arcade a {
+  color: var(--fg);
+  font-weight: 700;
+}
+
+.banner .banner-arcade {
+  margin-top: 0.6rem;
+  font-size: 0.9rem;
+}
+
+.banner-arcade[hidden] {
+  display: none;
 }

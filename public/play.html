@@ -18,6 +18,8 @@
   <meta property="og:image:alt" content="A smiling caterpillar made of rainbow-colored circles, above the words Snackerpillar: Eat the dots. Grow a rainbow.">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -29,6 +31,7 @@
       <div class="banner" id="banner" role="status" hidden>
         <h2 id="banner-title">Level 1 complete!</h2>
         <p id="banner-message"></p>
+        <p class="banner-arcade" id="banner-arcade" hidden>Find more games in the <a href="https://jessicasogge.github.io/tiny-game-arcade/">Tiny Game Arcade</a>.</p>
         <div class="banner-buttons">
           <button id="play-again" type="button">Play level 2</button>
         </div>
@@ -37,6 +40,7 @@
 
     <p class="circle-count" id="circle-count" aria-live="polite">Level 1 · 2 / 20 circles</p>
     <p class="hint">Grow long enough to finish all 10 levels. <span class="for-keys">Use the arrow keys to move.</span><span class="for-touch">Drag anywhere on the grass to move her, like a trackpad.</span> Don't bump into rocks, mushrooms or her own body!</p>
+    <p class="arcade-link">A <a href="https://jessicasogge.github.io/tiny-game-arcade/">Tiny Game Arcade</a> game.</p>
   </main>
   <script type="module" src="game/main.js"></script>
   <!-- Visit counts on GoatCounter, shared with PetriPals (petripals.goatcounter.com): no cookies, nothing personal. -->
