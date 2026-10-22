@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CELL_R } from '../public/game/config.js';
-import { keepInField, mixKinds, newSnack, placeObstacles } from '../public/game/field.js';
+import { keepInField, newSnack, nextKind, placeObstacles } from '../public/game/field.js';
 import { seeded } from '../public/game/draw.js';
 
 const HALF_H = 0.75;
@@ -116,39 +116,35 @@ describe('newSnack', () => {
 });
 
 describe('rocks and mushrooms', () => {
-  const kinds = (obstacles) => new Set(obstacles.map((o) => o.kind));
+  const count = (obstacles, kind) => obstacles.filter((o) => o.kind === kind).length;
+  const rock = { kind: 'rock' };
+  const mushroom = { kind: 'mushroom' };
 
-  it('always puts at least one of each on level 1, whatever the dice say', () => {
+  it('makes the next one whichever kind there are fewer of', () => {
+    expect(nextKind([rock, rock, mushroom])).toBe('mushroom');
+    expect(nextKind([mushroom, rock, mushroom])).toBe('rock');
+  });
+
+  it('picks either at random when there are as many of each', () => {
+    expect(nextKind([], () => 0.2)).toBe('rock');
+    expect(nextKind([rock, mushroom], () => 0.8)).toBe('mushroom');
+  });
+
+  it('puts 2 of one and 1 of the other on level 1, every time', () => {
     for (let seed = 1; seed <= 300; seed++) {
-      expect(kinds(placeObstacles(HALF_H, 3, seeded(seed)))).toEqual(new Set(['rock', 'mushroom']));
+      const placed = placeObstacles(HALF_H, 3, seeded(seed));
+      expect([count(placed, 'rock'), count(placed, 'mushroom')].sort()).toEqual([1, 2]);
     }
   });
 
-  const rock = (x) => ({ x, y: 0, r: 0.06, kind: 'rock' });
-  const mushroom = (x) => ({ x, y: 0, r: 0.06, kind: 'mushroom' });
-
-  it('turns the newest one into a mushroom when they all come up rocks', () => {
-    const mixed = mixKinds([rock(0.1), rock(0.2), rock(0.3)]);
-    expect(mixed.map((o) => o.kind)).toEqual(['rock', 'rock', 'mushroom']);
-    expect(mixed[2].x).toBe(0.3); // same spot, just the other kind
-  });
-
-  it('turns the newest one into a rock when they all come up mushrooms', () => {
-    expect(mixKinds([mushroom(0.1), mushroom(0.2), mushroom(0.3)]).map((o) => o.kind)).toEqual(['mushroom', 'mushroom', 'rock']);
-  });
-
-  it('leaves a mix alone', () => {
-    const mix = [rock(0.1), mushroom(0.2), rock(0.3)];
-    expect(mixKinds([...mix])).toEqual(mix);
-  });
-
-  it('never changes the obstacles kept from the level before', () => {
-    const mixed = mixKinds([rock(0.1), rock(0.2), rock(0.3), rock(0.4)], 3);
-    expect(mixed.slice(0, 3).map((o) => o.kind)).toEqual(['rock', 'rock', 'rock']);
-    expect(mixed[3].kind).toBe('mushroom');
-  });
-
-  it('leaves a single obstacle alone, since it cannot be both', () => {
-    expect(placeObstacles(HALF_H, 1, seeded(3))).toHaveLength(1);
+  it('evens up the kept ones from the level before', () => {
+    const kept = [
+      { x: 0.8, y: 0.5, r: 0.06, kind: 'rock', lumps: [1], turn: 0 },
+      { x: -0.8, y: 0.5, r: 0.06, kind: 'rock', lumps: [1], turn: 0 },
+      { x: 0.8, y: -0.5, r: 0.06, kind: 'mushroom', lumps: [1], turn: 0 },
+    ];
+    const placed = placeObstacles(HALF_H, 4, seeded(3), null, kept);
+    expect(placed.slice(0, 3)).toEqual(kept);
+    expect(placed[3].kind).toBe('mushroom');
   });
 });

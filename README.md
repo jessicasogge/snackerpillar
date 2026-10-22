@@ -31,7 +31,7 @@ There are 10 levels, and she keeps every circle she's grown from one level to th
 
 Each new level picks up exactly where the last one ended: she's in the same spot, facing the same way, with all her circles showing, and the rocks, mushrooms and dots stay where they were. One more obstacle is added, clear of her body, the way ahead of her face, and the dots.
 
-Every level has at least one gray rock and at least one mushroom. The mushrooms change color on every level, in shades of red, brown, tan and green.
+Every level has about as many gray rocks as mushrooms (never more than one apart). The mushrooms change color on every level, in shades of red, brown, tan and green.
 
 At the end of every level, a pop-up tells you how it went:
 

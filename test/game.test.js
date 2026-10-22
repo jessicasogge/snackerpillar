@@ -358,14 +358,16 @@ describe('game over', () => {
   });
 });
 
-describe('every level has both rocks and mushrooms', () => {
+describe('every level has both rocks and mushrooms, evenly', () => {
   it('on all 10 levels, played one after another, many times over', () => {
     for (let seed = 1; seed <= 60; seed++) {
       const rand = seeded(seed);
       let state = newGame({ halfH: HALF_H, rand });
       for (let level = 1; level <= LEVELS.length; level++) {
-        const kinds = new Set(state.obstacles.map((o) => o.kind));
-        expect(kinds, `seed ${seed}, level ${level}`).toEqual(new Set(['rock', 'mushroom']));
+        const rocks = state.obstacles.filter((o) => o.kind === 'rock').length;
+        const mushrooms = state.obstacles.length - rocks;
+        expect(Math.abs(rocks - mushrooms), `seed ${seed}, level ${level}`).toBeLessThanOrEqual(1);
+        expect(Math.min(rocks, mushrooms), `seed ${seed}, level ${level}`).toBeGreaterThanOrEqual(1);
         if (level === LEVELS.length) break;
         state.won = true;
         state = newGame({ halfH: HALF_H, level: level + 1, from: state, rand });
