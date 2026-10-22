@@ -24,11 +24,32 @@ export function placeObstacles(halfH, count, rand = Math.random, her = null, exi
   for (const gap of [0.22, 0.18, 0.14, 0.1]) {
     for (let attempt = 0; attempt < 15; attempt++) {
       const placed = tryPlacing(halfH, count, gap, rand, clearOfHer, existing);
-      if (placed.length === count) return placed;
+      if (placed.length === count) return mixKinds(placed, existing.length);
       if (placed.length > best.length) best = placed;
     }
   }
-  return best;
+  return mixKinds(best, existing.length);
+}
+
+// Make sure there's at least one rock and at least one mushroom. If one kind
+// is missing, the newest obstacle that can be changed becomes that kind;
+// obstacles from the level before (the first `kept` of them) never change.
+// Since they're kept from level to level, getting level 1 right means every
+// level has both.
+export function mixKinds(obstacles, kept = 0) {
+  for (const kind of ['rock', 'mushroom']) {
+    if (obstacles.some((o) => o.kind === kind)) continue;
+    const other = kind === 'rock' ? 'mushroom' : 'rock';
+    // Only change one if that leaves at least one of the other kind.
+    if (obstacles.filter((o) => o.kind === other).length < 2) continue;
+    for (let i = obstacles.length - 1; i >= kept; i--) {
+      if (obstacles[i].kind === other) {
+        obstacles[i] = { ...obstacles[i], kind };
+        break;
+      }
+    }
+  }
+  return obstacles;
 }
 
 // Level 1: clear of the middle, and of the line her body trails along below it.

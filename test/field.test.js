@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CELL_R } from '../public/game/config.js';
-import { keepInField, newSnack, placeObstacles } from '../public/game/field.js';
+import { keepInField, mixKinds, newSnack, placeObstacles } from '../public/game/field.js';
 import { seeded } from '../public/game/draw.js';
 
 const HALF_H = 0.75;
@@ -112,5 +112,43 @@ describe('newSnack', () => {
   it('returns null when there is nowhere to put one', () => {
     // Every try lands in the middle, right on top of the head.
     expect(newSnack({ halfH: HALF_H, head, snacks: [], obstacles: [], time: 0, rand: () => 0.5 })).toBeNull();
+  });
+});
+
+describe('rocks and mushrooms', () => {
+  const kinds = (obstacles) => new Set(obstacles.map((o) => o.kind));
+
+  it('always puts at least one of each on level 1, whatever the dice say', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      expect(kinds(placeObstacles(HALF_H, 3, seeded(seed)))).toEqual(new Set(['rock', 'mushroom']));
+    }
+  });
+
+  const rock = (x) => ({ x, y: 0, r: 0.06, kind: 'rock' });
+  const mushroom = (x) => ({ x, y: 0, r: 0.06, kind: 'mushroom' });
+
+  it('turns the newest one into a mushroom when they all come up rocks', () => {
+    const mixed = mixKinds([rock(0.1), rock(0.2), rock(0.3)]);
+    expect(mixed.map((o) => o.kind)).toEqual(['rock', 'rock', 'mushroom']);
+    expect(mixed[2].x).toBe(0.3); // same spot, just the other kind
+  });
+
+  it('turns the newest one into a rock when they all come up mushrooms', () => {
+    expect(mixKinds([mushroom(0.1), mushroom(0.2), mushroom(0.3)]).map((o) => o.kind)).toEqual(['mushroom', 'mushroom', 'rock']);
+  });
+
+  it('leaves a mix alone', () => {
+    const mix = [rock(0.1), mushroom(0.2), rock(0.3)];
+    expect(mixKinds([...mix])).toEqual(mix);
+  });
+
+  it('never changes the obstacles kept from the level before', () => {
+    const mixed = mixKinds([rock(0.1), rock(0.2), rock(0.3), rock(0.4)], 3);
+    expect(mixed.slice(0, 3).map((o) => o.kind)).toEqual(['rock', 'rock', 'rock']);
+    expect(mixed[3].kind).toBe('mushroom');
+  });
+
+  it('leaves a single obstacle alone, since it cannot be both', () => {
+    expect(placeObstacles(HALF_H, 1, seeded(3))).toHaveLength(1);
   });
 });
