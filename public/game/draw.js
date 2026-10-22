@@ -1,4 +1,4 @@
-import { CELL_R, HEAD_HUE, MUSHROOM_COLORS, SPACING } from './config.js';
+import { CELL_R, FLOWER_COLORS, HEAD_HUE, MUSHROOM_COLORS, SPACING } from './config.js';
 import { spotsAlong } from './trail.js';
 
 // Draws the game on canvas; `colors` returns theme-based lawn colors
@@ -60,9 +60,12 @@ export function makeRenderer(canvas, { colors, reduceMotion = false, makeCanvas 
     return w ? h / w : 0.75;
   }
 
-  // The lawn: soft light and shade, little grass blades, and a few daisies.
-  // Seeded, so it looks the same every time it's repainted.
+  // The lawn: soft light and shade, little grass blades, and a few daisies in
+  // this level's pale color. Seeded, so the blades and daisies stay in the
+  // same places every time it's repainted; only the daisies' color changes.
+  let lawnLevel = 1;
   function paintLawn() {
+    const flowers = flowerColor(lawnLevel);
     if (!w) return;
     const { light, shade, blade } = colors();
     lawn.width = canvas.width;
@@ -99,14 +102,14 @@ export function makeRenderer(canvas, { colors, reduceMotion = false, makeCanvas 
       g.translate(x, y);
       g.rotate(rand() * Math.PI);
       g.globalAlpha = 0.75;
-      g.fillStyle = '#ffffff';
+      g.fillStyle = flowers.petals;
       for (let p = 0; p < 6; p++) {
         g.rotate(Math.PI / 3);
         g.beginPath();
         g.ellipse(r * 1.3, 0, r, r * 0.55, 0, 0, Math.PI * 2);
         g.fill();
       }
-      g.fillStyle = '#f6c945';
+      g.fillStyle = flowers.center;
       g.beginPath();
       g.arc(0, 0, r * 0.8, 0, Math.PI * 2);
       g.fill();
@@ -256,6 +259,10 @@ export function makeRenderer(canvas, { colors, reduceMotion = false, makeCanvas 
   function draw(state) {
     if (!w) return;
     const { time } = state;
+    if ((state.level ?? 1) !== lawnLevel) {
+      lawnLevel = state.level ?? 1;
+      paintLawn(); // a new level: new flower colors
+    }
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.drawImage(lawn, 0, 0);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -283,6 +290,9 @@ const MUSHROOM_SPOTS = [
   [-0.35, -0.3, 0.2], [0.35, -0.15, 0.16], [0, 0.4, 0.18],
   [-0.45, 0.3, 0.12], [0.25, -0.55, 0.11], [0.5, 0.35, 0.1],
 ];
+
+// The daisies' colors on a level (1 and up), going round the palette.
+export const flowerColor = (level = 1) => FLOWER_COLORS[(level - 1) % FLOWER_COLORS.length];
 
 // The mushrooms' colors on a level (1 and up), going round the palette.
 export const mushroomColor = (level = 1) => MUSHROOM_COLORS[(level - 1) % MUSHROOM_COLORS.length];

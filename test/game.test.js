@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { CELL_R, LEVELS, RESPAWN_SECONDS, SPACING, START_HUE } from '../public/game/config.js';
+import { CELL_R, HEAD_HUE, LEVELS, RESPAWN_SECONDS, SPACING, START_AWAY_FROM_HEAD } from '../public/game/config.js';
 import { seeded } from '../public/game/draw.js';
-import { hasNextLevel, herPoints, length, newGame, step } from '../public/game/game.js';
+import { hasNextLevel, herPoints, length, newGame, startHue, step } from '../public/game/game.js';
 import { trailLength } from '../public/game/trail.js';
 import { placeObstacles } from '../public/game/field.js';
 
@@ -31,9 +31,31 @@ function densify(corners) {
 describe('a new game', () => {
   const state = newGame({ halfH: HALF_H, rand: seeded(5) });
 
-  it('starts in the middle with her head and one purple circle behind it', () => {
+  it('starts in the middle with her head and one circle behind it', () => {
     expect(length(state)).toBe(2);
-    expect(state.body).toEqual([{ hue: START_HUE, born: expect.any(Number) }]);
+    expect(state.body).toEqual([{ hue: expect.any(Number), born: expect.any(Number) }]);
+  });
+
+  it('gives that first circle a random color, never close to her orange head', () => {
+    const hues = new Set();
+    // Seeds spread far apart: seeded()'s first number is tiny for small seeds,
+    // and the color is the first thing a new game rolls. (The real game uses
+    // Math.random.)
+    for (let seed = 1; seed <= 200; seed++) {
+      const hue = newGame({ halfH: HALF_H, rand: seeded(seed * 9_999_991) }).body[0].hue;
+      hues.add(Math.floor(hue / 30));
+      const apart = Math.min(Math.abs(hue - HEAD_HUE), 360 - Math.abs(hue - HEAD_HUE));
+      expect(apart).toBeGreaterThanOrEqual(START_AWAY_FROM_HEAD);
+    }
+    expect(hues.size).toBeGreaterThanOrEqual(10); // spread round most of the rainbow
+  });
+
+  it('keeps the random first color within the rainbow, even at the edges', () => {
+    for (const roll of [0, 0.5, 0.999999]) {
+      const hue = startHue(() => roll);
+      expect(hue).toBeGreaterThanOrEqual(0);
+      expect(hue).toBeLessThan(360);
+    }
     expect(state.head).toMatchObject({ x: 0, y: 0 });
     expect(state.over).toBeNull();
   });
@@ -280,7 +302,7 @@ describe('eating', () => {
     step(state, { ...idle(), dt: 0.05 });
     state.snacks.push({ x: state.head.x, y: state.head.y - 0.06, r: 0.02, hue: 300, born: 0, eatenAt: null });
     step(state, { ...idle(), dt: 0.05 });
-    expect(state.body.map((c) => c.hue)).toEqual([START_HUE, 10, 300]);
+    expect(state.body.map((c) => c.hue).slice(1)).toEqual([10, 300]);
   });
 
   it('lets the eaten dot shrink away, then brings a new one back later', () => {
