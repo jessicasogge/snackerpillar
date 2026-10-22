@@ -1,4 +1,4 @@
-import { CELL_R, HEAD_HUE, SPACING } from './config.js';
+import { CELL_R, HEAD_HUE, MUSHROOM_COLORS, SPACING } from './config.js';
 import { spotsAlong } from './trail.js';
 
 // Draws the game on canvas; `colors` returns theme-based lawn colors
@@ -136,7 +136,7 @@ export function makeRenderer(canvas, { colors, reduceMotion = false, makeCanvas 
     ctx.restore();
   }
 
-  function drawObstacle(o) {
+  function drawObstacle(o, level) {
     const r = px(o.r);
     ctx.save();
     ctx.translate(px(o.x), px(o.y));
@@ -166,14 +166,16 @@ export function makeRenderer(canvas, { colors, reduceMotion = false, makeCanvas 
       ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
       ctx.fill();
     } else {
-      // A red toadstool seen from above: a round cap with white spots.
+      // A toadstool seen from above: a round cap with pale spots, in this
+      // level's color.
+      const color = mushroomColor(level);
       ctx.beginPath();
       ctx.arc(0, 0, r, 0, Math.PI * 2);
-      ctx.fillStyle = '#e0483e';
+      ctx.fillStyle = color.cap;
       ctx.fill();
-      ctx.strokeStyle = '#8f231d';
+      ctx.strokeStyle = color.edge;
       ctx.stroke();
-      ctx.fillStyle = '#fff6ee';
+      ctx.fillStyle = color.spots;
       for (const [sx, sy, sr] of MUSHROOM_SPOTS) {
         ctx.beginPath();
         ctx.arc(sx * r, sy * r, sr * r, 0, Math.PI * 2);
@@ -260,7 +262,7 @@ export function makeRenderer(canvas, { colors, reduceMotion = false, makeCanvas 
     ctx.save();
     ctx.translate(w / 2, h / 2);
     for (const s of state.snacks) drawSnack(s, time);
-    for (const o of state.obstacles) drawObstacle(o);
+    for (const o of state.obstacles) drawObstacle(o, state.level);
     // Draw tail first so circles tuck under those ahead.
     // Skip new circles until they have trail positions (also ignored by tailHit).
     const spots = spotsAlong(state.trail, SPACING, state.body.length);
@@ -281,6 +283,9 @@ const MUSHROOM_SPOTS = [
   [-0.35, -0.3, 0.2], [0.35, -0.15, 0.16], [0, 0.4, 0.18],
   [-0.45, 0.3, 0.12], [0.25, -0.55, 0.11], [0.5, 0.35, 0.1],
 ];
+
+// The mushrooms' colors on a level (1 and up), going round the palette.
+export const mushroomColor = (level = 1) => MUSHROOM_COLORS[(level - 1) % MUSHROOM_COLORS.length];
 
 // How big a new circle is `age` seconds after she ate the dot: it pops in with
 // a little overshoot, then settles at full size.
