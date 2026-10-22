@@ -1,4 +1,4 @@
-import { LEVELS, RESPAWN_SECONDS, SNACKS, SPACING, START_HUE } from './config.js';
+import { HEAD_HUE, LEVELS, RESPAWN_SECONDS, SNACKS, SPACING, START_AWAY_FROM_HEAD } from './config.js';
 import { obstacleHit, tailHit, touchesSnack } from './collide.js';
 import { keepInField, newSnack, placeObstacles } from './field.js';
 import { steer } from './steer.js';
@@ -7,8 +7,8 @@ import { extendTrail, spotsAlong, trimTrail } from './trail.js';
 const RETRY_SECONDS = 0.5; // how soon a dot with nowhere to go tries again
 
 // A level (1 to 10), with that level's obstacles and the dots scattered
-// around her. On level 1 she's in the middle facing up, with one purple
-// circle behind her head. On later levels, `from` is the level she just
+// around her. On level 1 she's in the middle facing up, with one circle of
+// a random color behind her head. On later levels, `from` is the level she just
 // finished, and everything stays where it was: she starts in the same spot,
 // facing the same way, with all her circles in the same places and colors;
 // the rocks, mushrooms and dots stay put; and one more obstacle is added,
@@ -22,7 +22,7 @@ export function newGame({ halfH, level = 1, from = null, rand = Math.random }) {
     head: from ? { ...from.head } : { x: 0, y: 0, dir: -Math.PI / 2 },
     trail: from ? from.trail.map((p) => ({ ...p })) : [{ x: 0, y: 0 }],
     // { hue, born }, from just behind the head to the tail
-    body: from ? from.body.map(({ hue }) => ({ hue, born: -1 })) : [{ hue: START_HUE, born: -1 }],
+    body: from ? from.body.map(({ hue }) => ({ hue, born: -1 })) : [{ hue: startHue(rand), born: -1 }],
     snacks: [],
     obstacles: [],
     respawns: [], // when each eaten dot comes back, in game seconds
@@ -41,6 +41,13 @@ export function newGame({ halfH, level = 1, from = null, rand = Math.random }) {
   state.obstacles = placeObstacles(halfH, obstacles, rand, her, from ? from.obstacles : []);
   if (!from) for (let i = 0; i < SNACKS; i++) addSnack(state, halfH, rand);
   return state;
+}
+
+// The color of the circle behind her head when a game starts: any hue but
+// the ones close to her orange head.
+export function startHue(rand = Math.random) {
+  const span = 360 - 2 * START_AWAY_FROM_HEAD;
+  return Math.floor(HEAD_HUE + START_AWAY_FROM_HEAD + rand() * span) % 360;
 }
 
 // Where her head and each of her circles are. A circle with no trail to

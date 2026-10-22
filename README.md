@@ -9,7 +9,7 @@ A browser game about a very hungry caterpillar made of circles. Every dot she ea
 ## How to play
 
 - **Move** with the arrow keys. She only moves while you're steering her, and turns sharply enough to U-turn without running into herself. On a touch screen, drag anywhere on the grass like a trackpad: she moves the way your finger slides, so your finger never hides her.
-- **Eat the colored dots** to grow. She starts with one purple circle behind her head. Each one adds a circle to the end of her body in its color, and a new dot appears somewhere else a moment later.
+- **Eat the colored dots** to grow. She starts with one circle of a random color behind her head. Each one adds a circle to the end of her body in its color, and a new dot appears somewhere else a moment later.
 - **Don't bump into rocks, mushrooms or her own body.** Any of those ends the game, and you start over from level 1. The edges of the garden are safe: she just stops there, and you can slide her along them.
 
 ### Levels
@@ -30,6 +30,8 @@ There are 10 levels, and she keeps every circle she's grown from one level to th
 | 10 | 12 | 200 circles |
 
 Each new level picks up exactly where the last one ended: she's in the same spot, facing the same way, with all her circles showing, and the rocks, mushrooms and dots stay where they were. One more obstacle is added, clear of her body, the way ahead of her face, and the dots.
+
+Every level has about as many gray rocks as mushrooms (never more than one apart). The mushrooms change color on every level, in shades of red, brown, tan and green, and so do the daisies on the lawn, in very pale shades that never look like food.
 
 At the end of every level, a pop-up tells you how it went:
 

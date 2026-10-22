@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { makeRenderer, popSize, seeded } from '../public/game/draw.js';
+import { flowerColor, makeRenderer, mushroomColor, popSize, seeded } from '../public/game/draw.js';
+import { FLOWER_COLORS, LEVELS, MUSHROOM_COLORS } from '../public/game/config.js';
 import { newGame } from '../public/game/game.js';
 
 // A stand-in for a canvas's 2D context that records what was called.
@@ -157,6 +158,97 @@ describe('draw', () => {
     renderer.resize(1);
     renderer.draw(state);
     expect(canvas.calls).toEqual([]);
+  });
+});
+
+describe('mushroom colors', () => {
+  // A color's hue (0 to 360) and lightness (0 to 1), from '#rrggbb'.
+  function hsl(hex) {
+    const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const d = max - min;
+    let h = 0;
+    if (d) h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+    return { hue: (h * 60 + 360) % 360, light: (max + min) / 2 };
+  }
+
+  it('gives every level its own color', () => {
+    const caps = LEVELS.map((_, i) => mushroomColor(i + 1).cap);
+    expect(new Set(caps).size).toBe(LEVELS.length);
+  });
+
+  it('starts with the red toadstool on level 1', () => {
+    expect(mushroomColor(1).cap).toBe('#e0483e');
+  });
+
+  it('goes round the colors again if there are more levels than colors', () => {
+    expect(mushroomColor(MUSHROOM_COLORS.length + 1)).toBe(mushroomColor(1));
+  });
+
+  it('sticks to reds, browns, tans and greens', () => {
+    for (const { cap } of MUSHROOM_COLORS) {
+      const { hue } = hsl(cap);
+      const redBrownTan = hue <= 40 || hue >= 350;
+      const green = hue >= 55 && hue <= 130; // yellow-greens to forest green, short of teal
+      expect(redBrownTan || green, cap).toBe(true);
+    }
+  });
+
+  it('keeps the outline darker than the cap and the spots paler, so they show up', () => {
+    for (const { cap, edge, spots } of MUSHROOM_COLORS) {
+      expect(hsl(edge).light).toBeLessThan(hsl(cap).light);
+      expect(hsl(spots).light).toBeGreaterThan(hsl(cap).light + 0.2);
+    }
+  });
+
+  it("paints the mushrooms in the level's color", () => {
+    const capsDrawn = (level) => {
+      const { canvas, renderer } = setup();
+      renderer.resize(1);
+      canvas.styles.length = 0;
+      const game = newGame({ halfH: 0.75, rand: seeded(9) });
+      renderer.draw({ ...game, level, obstacles: [{ x: -0.6, y: 0.5, r: 0.07, kind: 'mushroom' }] });
+      return canvas.styles;
+    };
+    expect(capsDrawn(1)).toContain(mushroomColor(1).cap);
+    expect(capsDrawn(4)).toContain(mushroomColor(4).cap);
+    expect(capsDrawn(4)).not.toContain(mushroomColor(1).cap);
+  });
+});
+
+describe('flower colors', () => {
+  // A color's lightness (0 to 1), from '#rrggbb'.
+  const lightness = (hex) => {
+    const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+    return (Math.max(r, g, b) + Math.min(r, g, b)) / 2;
+  };
+
+  it('gives every level its own color, starting with white daisies', () => {
+    const petals = LEVELS.map((_, i) => flowerColor(i + 1).petals);
+    expect(new Set(petals).size).toBe(LEVELS.length);
+    expect(flowerColor(1).petals).toBe('#ffffff');
+  });
+
+  it("keeps them all very pale, so they never look like the bright dots she eats", () => {
+    // The dots are hsl(hue 85% 55%): lightness 0.55.
+    for (const { petals, center } of FLOWER_COLORS) {
+      expect(lightness(petals), petals).toBeGreaterThanOrEqual(0.9);
+      expect(lightness(center), center).toBeGreaterThanOrEqual(0.75);
+    }
+  });
+
+  it('repaints the lawn with new flower colors when the level changes, and only then', () => {
+    const { lawn, renderer } = setup();
+    renderer.resize(1);
+    const game = newGame({ halfH: 0.75, rand: seeded(9) });
+    lawn.styles.length = 0;
+    renderer.draw({ ...game, level: 1 });
+    expect(lawn.styles).toHaveLength(0); // same level: the lawn is reused
+    renderer.draw({ ...game, level: 3 });
+    expect(lawn.styles).toContain(flowerColor(3).petals);
+    expect(lawn.styles).toContain(flowerColor(3).center);
+    expect(lawn.styles).not.toContain(flowerColor(1).petals);
   });
 });
 

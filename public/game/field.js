@@ -48,6 +48,17 @@ function clearOfBody({ points, head, dots = [] }, x, y, r) {
   return true;
 }
 
+// Whether the next obstacle is a rock or a mushroom: whichever there are
+// fewer of so far (counting the ones kept from the level before), or either
+// one at random if there are as many of each. That keeps the two within one
+// of each other on every level, and gives every level at least one of each.
+export function nextKind(obstacles, rand = Math.random) {
+  const rocks = obstacles.filter((o) => o.kind === 'rock').length;
+  const mushrooms = obstacles.length - rocks;
+  if (rocks !== mushrooms) return rocks < mushrooms ? 'rock' : 'mushroom';
+  return rand() < 0.5 ? 'rock' : 'mushroom';
+}
+
 function tryPlacing(halfH, count, gap, rand, clearOfHer, existing) {
   const obstacles = existing.map((o) => ({ ...o }));
   for (let i = obstacles.length; i < count; i++) {
@@ -57,7 +68,7 @@ function tryPlacing(halfH, count, gap, rand, clearOfHer, existing) {
       const y = (rand() * 2 - 1) * (halfH - r - 0.05);
       const clearOfOthers = obstacles.every((o) => Math.hypot(x - o.x, y - o.y) > o.r + r + gap);
       if (clearOfHer(x, y, r) && clearOfOthers) {
-        const kind = rand() < 0.6 ? 'rock' : 'mushroom';
+        const kind = nextKind(obstacles, rand);
         // A rock's lumpy outline: a radius for each of 9 points around it.
         const lumps = Array.from({ length: 9 }, () => 0.85 + rand() * 0.2);
         obstacles.push({ x, y, r, kind, lumps, turn: rand() * Math.PI * 2 });

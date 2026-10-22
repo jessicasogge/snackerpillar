@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CELL_R } from '../public/game/config.js';
-import { keepInField, newSnack, placeObstacles } from '../public/game/field.js';
+import { keepInField, newSnack, nextKind, placeObstacles } from '../public/game/field.js';
 import { seeded } from '../public/game/draw.js';
 
 const HALF_H = 0.75;
@@ -112,5 +112,39 @@ describe('newSnack', () => {
   it('returns null when there is nowhere to put one', () => {
     // Every try lands in the middle, right on top of the head.
     expect(newSnack({ halfH: HALF_H, head, snacks: [], obstacles: [], time: 0, rand: () => 0.5 })).toBeNull();
+  });
+});
+
+describe('rocks and mushrooms', () => {
+  const count = (obstacles, kind) => obstacles.filter((o) => o.kind === kind).length;
+  const rock = { kind: 'rock' };
+  const mushroom = { kind: 'mushroom' };
+
+  it('makes the next one whichever kind there are fewer of', () => {
+    expect(nextKind([rock, rock, mushroom])).toBe('mushroom');
+    expect(nextKind([mushroom, rock, mushroom])).toBe('rock');
+  });
+
+  it('picks either at random when there are as many of each', () => {
+    expect(nextKind([], () => 0.2)).toBe('rock');
+    expect(nextKind([rock, mushroom], () => 0.8)).toBe('mushroom');
+  });
+
+  it('puts 2 of one and 1 of the other on level 1, every time', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const placed = placeObstacles(HALF_H, 3, seeded(seed));
+      expect([count(placed, 'rock'), count(placed, 'mushroom')].sort()).toEqual([1, 2]);
+    }
+  });
+
+  it('evens up the kept ones from the level before', () => {
+    const kept = [
+      { x: 0.8, y: 0.5, r: 0.06, kind: 'rock', lumps: [1], turn: 0 },
+      { x: -0.8, y: 0.5, r: 0.06, kind: 'rock', lumps: [1], turn: 0 },
+      { x: 0.8, y: -0.5, r: 0.06, kind: 'mushroom', lumps: [1], turn: 0 },
+    ];
+    const placed = placeObstacles(HALF_H, 4, seeded(3), null, kept);
+    expect(placed.slice(0, 3)).toEqual(kept);
+    expect(placed[3].kind).toBe('mushroom');
   });
 });
