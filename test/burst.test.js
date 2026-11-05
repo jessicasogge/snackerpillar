@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const confetti = vi.fn();
 vi.mock('../public/game/vendor/confetti.js', () => ({ default: (...args) => confetti(...args) }));
-const { RAINBOW, burstOrigin, dotBurst } = await import('../public/game/burst.js');
+const { RAINBOW, burstOrigin, dotBurst, loadConfetti } = await import('../public/game/burst.js');
 
 const fakeWindow = () => ({ innerWidth: 800, innerHeight: 600, setTimeout: (fn) => fn() });
 
@@ -30,25 +30,32 @@ describe('burstOrigin', () => {
 });
 
 describe('dotBurst', () => {
-  it('puffs a few rainbow dots out of her head for a level', () => {
-    dotBurst({ x: 400, y: 300 }, { win: fakeWindow() });
+  it('puffs a few rainbow dots out of her head for a level', async () => {
+    await dotBurst({ x: 400, y: 300 }, { win: fakeWindow() });
     expect(confetti).toHaveBeenCalledTimes(1);
     const [options] = confetti.mock.calls[0];
     expect(options).toMatchObject({ origin: { x: 0.5, y: 0.5 }, colors: RAINBOW, shapes: ['circle'], spread: 360, disableForReducedMotion: true });
     expect(options.particleCount).toBeLessThan(50);
   });
 
-  it('bursts much bigger, in three waves, for beating the last level', () => {
-    dotBurst({ x: 400, y: 300 }, { big: true, win: fakeWindow() });
+  it('bursts much bigger, in three waves, for beating the last level', async () => {
+    await dotBurst({ x: 400, y: 300 }, { big: true, win: fakeWindow() });
     expect(confetti).toHaveBeenCalledTimes(3);
     const total = confetti.mock.calls.reduce((sum, [o]) => sum + o.particleCount, 0);
     expect(total).toBeGreaterThan(400);
   });
 
-  it('never breaks the game if the confetti fails', () => {
+  it('never breaks the game if the confetti fails', async () => {
     confetti.mockImplementation(() => {
       throw new Error('no canvas');
     });
-    expect(() => dotBurst({ x: 1, y: 1 }, { win: fakeWindow() })).not.toThrow();
+    await expect(dotBurst({ x: 1, y: 1 }, { win: fakeWindow() })).resolves.toBeUndefined();
+  });
+
+  it('loads the confetti library only once, however many bursts there are', async () => {
+    expect(loadConfetti()).toBe(loadConfetti());
+    await dotBurst({ x: 1, y: 1 }, { win: fakeWindow() });
+    await dotBurst({ x: 1, y: 1 }, { win: fakeWindow() });
+    expect(confetti).toHaveBeenCalledTimes(2);
   });
 });

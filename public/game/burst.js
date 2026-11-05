@@ -2,7 +2,19 @@
 // each level, and a big burst in three waves for beating the last one. Uses
 // canvas-confetti (vendor/confetti.js, v1.9.4, ISC license), copied in
 // because the game is plain files with no build step.
-import confetti from './vendor/confetti.js';
+//
+// The confetti library is the biggest file the game uses, and it isn't
+// needed until she finishes a level, so it isn't loaded with the rest of the
+// game: loadConfetti fetches it in the background once she's on the grass.
+
+let confettiLoading = null;
+
+// Start loading the confetti library, if it isn't already. Returns a promise
+// of it.
+export function loadConfetti() {
+  confettiLoading ??= import('./vendor/confetti.js').then((m) => m.default);
+  return confettiLoading;
+}
 
 // The dots' rainbow, like the circles she grows.
 export const RAINBOW = ['#e85a5a', '#f2a948', '#f6d84a', '#7fd65b', '#4fc3d9', '#5b7fe0', '#a66ee0', '#e56fc4'];
@@ -18,8 +30,11 @@ export function burstOrigin(spot, width, height) {
 
 // Burst dots out from `spot` (her head, in page pixels). `big` is for
 // beating the last level.
-export function dotBurst(spot, { big = false, win = window } = {}) {
+// Returns a promise that settles once the burst has started; it never
+// rejects, since a celebration is never worth breaking the game over.
+export async function dotBurst(spot, { big = false, win = window } = {}) {
   try {
+    const confetti = await loadConfetti();
     const base = {
       origin: burstOrigin(spot, win.innerWidth, win.innerHeight),
       colors: RAINBOW,

@@ -22,6 +22,18 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="preload" href="fonts/fredoka-700.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="styles.css">
+  <!-- Start fetching the game while the home page is open, so it's ready by
+       the time the player presses Start. -->
+  <link rel="modulepreload" href="game/main.js">
+  <link rel="modulepreload" href="game/config.js">
+  <link rel="modulepreload" href="game/game.js">
+  <link rel="modulepreload" href="game/draw.js">
+  <link rel="modulepreload" href="game/input.js">
+  <link rel="modulepreload" href="game/burst.js">
+  <link rel="modulepreload" href="game/collide.js">
+  <link rel="modulepreload" href="game/field.js">
+  <link rel="modulepreload" href="game/steer.js">
+  <link rel="modulepreload" href="game/trail.js">
 </head>
 <body class="home">
   <main>

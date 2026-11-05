@@ -21,6 +21,19 @@
   <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="stylesheet" href="styles.css">
+  <!-- Every module the game needs to start, so the browser fetches them all at
+       once instead of discovering them one import at a time. (The confetti
+       library is left out: it loads in the background once she's on the grass.) -->
+  <link rel="modulepreload" href="game/main.js">
+  <link rel="modulepreload" href="game/config.js">
+  <link rel="modulepreload" href="game/game.js">
+  <link rel="modulepreload" href="game/draw.js">
+  <link rel="modulepreload" href="game/input.js">
+  <link rel="modulepreload" href="game/burst.js">
+  <link rel="modulepreload" href="game/collide.js">
+  <link rel="modulepreload" href="game/field.js">
+  <link rel="modulepreload" href="game/steer.js">
+  <link rel="modulepreload" href="game/trail.js">
 </head>
 <body>
   <main>

@@ -1,6 +1,6 @@
 import { GAME_OVER_DELAY_MS, LEVELS, WIN_DELAY_MS } from './config.js';
 import { hasNextLevel, length, newGame, step } from './game.js';
-import { dotBurst } from './burst.js';
+import { dotBurst, loadConfetti } from './burst.js';
 import { makeRenderer } from './draw.js';
 import { watchInputMode } from './input.js';
 
@@ -16,7 +16,7 @@ const BUMPED = {
 // counter, and the pop-up at the end of each level.
 // Returns a few handles for tests.
 // `celebrate` bursts rainbow dots out of her when she finishes a level.
-export function startGame({ doc = document, win = window, celebrate = dotBurst } = {}) {
+export function startGame({ doc = document, win = window, celebrate = dotBurst, preloadCelebration = loadConfetti } = {}) {
   const canvas = doc.getElementById('field');
   const countEl = doc.getElementById('circle-count');
   const banner = doc.getElementById('banner');
@@ -163,6 +163,9 @@ export function startGame({ doc = document, win = window, celebrate = dotBurst }
 
   play({ level: 1 });
   win.requestAnimationFrame(frame);
+  // Fetch the confetti for the end of the level in the background, once
+  // she's on the grass, so it's ready long before she finishes.
+  win.setTimeout(() => preloadCelebration().catch(() => {}), 1000);
   return { get state() { return state; }, tick, keys, drag };
 }
 

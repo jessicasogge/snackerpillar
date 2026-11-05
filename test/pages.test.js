@@ -1,6 +1,3 @@
-// GitHub Pages serves the game from a folder (jessicasogge.github.io/snackerpillar/),
-// not the site's root, so every link between the game's own files has to be
-// relative. A path starting with "/" would point outside the game there.
 import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -107,5 +104,32 @@ describe('icons', () => {
 
   it('has a 180 by 180 icon for adding the game to an iPhone home screen', () => {
     expect(size('apple-touch-icon.png')).toEqual([180, 180]);
+  });
+});
+
+describe('starting quickly', () => {
+  function startupModules() {
+    const seen = new Set();
+    const visit = (file) => {
+      if (seen.has(file)) return;
+      seen.add(file);
+      for (const [, path] of read(file).matchAll(/^import [^;]+ from '\.\/([^']+)';/gm)) visit(`game/${path}`);
+    };
+    visit('game/main.js');
+    return [...seen].sort();
+  }
+  const preloaded = (page) => [...read(page).matchAll(/<link rel="modulepreload" href="([^"]+)">/g)].map((m) => m[1]).sort();
+
+  it('lists every module the game needs up front, so they all download at once', () => {
+    expect(preloaded('play.html')).toEqual(startupModules());
+  });
+
+  it('starts fetching them from the home page, before Start is pressed', () => {
+    expect(preloaded('index.html')).toEqual(startupModules());
+  });
+
+  it('leaves the big confetti library out of the start, to load later', () => {
+    expect(startupModules()).not.toContain('game/vendor/confetti.js');
+    expect(read('game/burst.js')).toMatch(/import\('\.\/vendor\/confetti\.js'\)/);
   });
 });
