@@ -248,6 +248,23 @@ describe('celebrating', () => {
   });
 });
 
+describe('loading the confetti', () => {
+  it('starts fetching it in the background a moment after she appears', () => {
+    const preloadCelebration = vi.fn(() => Promise.resolve());
+    startGame({ preloadCelebration });
+    expect(preloadCelebration).not.toHaveBeenCalled(); // not while the game is starting
+    vi.advanceTimersByTime(1000);
+    expect(preloadCelebration).toHaveBeenCalledTimes(1);
+  });
+
+  it("doesn't break the game if it can't be fetched", async () => {
+    startGame({ preloadCelebration: () => Promise.reject(new Error('offline')) });
+    vi.advanceTimersByTime(1000);
+    await Promise.resolve();
+    expect(text('circle-count')).toMatch(/^Level 1/);
+  });
+});
+
 describe('the Tiny Game Arcade', () => {
   const arcade = () => document.getElementById('banner-arcade');
 

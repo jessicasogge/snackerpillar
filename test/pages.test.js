@@ -109,3 +109,33 @@ describe('icons', () => {
     expect(size('apple-touch-icon.png')).toEqual([180, 180]);
   });
 });
+
+describe('starting quickly', () => {
+  // Every module the game page loads at start: main.js and everything it
+  // imports, and everything those import, but not the confetti library,
+  // which is loaded later with import().
+  function startupModules() {
+    const seen = new Set();
+    const visit = (file) => {
+      if (seen.has(file)) return;
+      seen.add(file);
+      for (const [, path] of read(file).matchAll(/^import [^;]+ from '\.\/([^']+)';/gm)) visit(`game/${path}`);
+    };
+    visit('game/main.js');
+    return [...seen].sort();
+  }
+  const preloaded = (page) => [...read(page).matchAll(/<link rel="modulepreload" href="([^"]+)">/g)].map((m) => m[1]).sort();
+
+  it('lists every module the game needs up front, so they all download at once', () => {
+    expect(preloaded('play.html')).toEqual(startupModules());
+  });
+
+  it('starts fetching them from the home page, before Start is pressed', () => {
+    expect(preloaded('index.html')).toEqual(startupModules());
+  });
+
+  it('leaves the big confetti library out of the start, to load later', () => {
+    expect(startupModules()).not.toContain('game/vendor/confetti.js');
+    expect(read('game/burst.js')).toMatch(/import\('\.\/vendor\/confetti\.js'\)/);
+  });
+});
