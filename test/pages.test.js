@@ -1,6 +1,3 @@
-// GitHub Pages serves the game from a folder (jessicasogge.github.io/snackerpillar/),
-// not the site's root, so every link between the game's own files has to be
-// relative. A path starting with "/" would point outside the game there.
 import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -111,9 +108,6 @@ describe('icons', () => {
 });
 
 describe('starting quickly', () => {
-  // Every module the game page loads at start: main.js and everything it
-  // imports, and everything those import, but not the confetti library,
-  // which is loaded later with import().
   function startupModules() {
     const seen = new Set();
     const visit = (file) => {
