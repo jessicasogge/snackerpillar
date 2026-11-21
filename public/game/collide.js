@@ -1,4 +1,4 @@
-import { CELL_R, SAFE_NECK, SPACING } from './config.js';
+import { CELL_R, NECK_OVERLAP, SAFE_NECK, SPACING } from './config.js';
 import { spotsAlong } from './trail.js';
 
 // Whether the head is touching a dot.
@@ -12,13 +12,31 @@ export function obstacleHit(head, obstacles) {
   return obstacles.find((o) => Math.hypot(o.x - head.x, o.y - head.y) < o.r * 0.85 + CELL_R * 0.9) ?? null;
 }
 
-// Whether the head ran into her own body. The circles just behind the head
-// (SAFE_NECK of them) don't count, so an ordinary turn is safe, and neither
-// does a circle with no trail to sit on yet (see draw.js). `spots` are where
-// her circles are, if already worked out this frame (see spotsAlong).
+// Whether the head ran into her own body. `spots` are where her circles are,
+// if already worked out this frame (see spotsAlong); a circle with no trail
+// to sit on yet doesn't count (see draw.js).
+//
+// The circles just behind the head (SAFE_NECK of them) come close to it in
+// any tight turn, and in a turn on the spot against the edge of the garden,
+// so they only count when she's been flipped straight back over them: just
+// after a drag flipped her round (head.flippedAt, see steer.js), until she's
+// crawled past them, and only when one is in front of her face and
+// overlapping it. That catches backing into her own tail at any length, and
+// keeps turning, at an edge or anywhere else, safe.
 export function tailHit(head, trail, bodyLength, spots = spotsAlong(trail, SPACING, bodyLength)) {
-  for (let i = SAFE_NECK; i < spots.length; i++) {
-    if (Math.hypot(spots[i].x - head.x, spots[i].y - head.y) < CELL_R * 1.5) return true;
+  const fx = Math.cos(head.dir);
+  const fy = Math.sin(head.dir);
+  const flipped = head.flippedAt
+    && Math.hypot(head.x - head.flippedAt.x, head.y - head.flippedAt.y) < SAFE_NECK * SPACING + CELL_R;
+  for (let i = 0; i < spots.length; i++) {
+    const dx = spots[i].x - head.x;
+    const dy = spots[i].y - head.y;
+    const dist = Math.hypot(dx, dy);
+    if (i >= SAFE_NECK) {
+      if (dist < CELL_R * 1.5) return true;
+    } else if (flipped && dist < CELL_R * NECK_OVERLAP && dx * fx + dy * fy > 0) {
+      return true;
+    }
   }
   return false;
 }

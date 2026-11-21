@@ -50,7 +50,11 @@ export const LEVELS = Array.from({ length: 10 }, (_, i) => ({ obstacles: 3 + i, 
 export const GAME_OVER_DELAY_MS = 600;
 // How long it waits after a win, for the last circle to finish popping in.
 export const WIN_DELAY_MS = 450;
-export const SAFE_NECK = 3; // the first few circles behind the head can't be bumped into
+export const SAFE_NECK = 3; // the first few circles behind the head only count if she backs over them
+// How far into one of those first circles her head has to go, facing it, to
+// count as a bump (in circle radii between their middles): far enough that a
+// finger wobbling back a pixel or two doesn't end the game.
+export const NECK_OVERLAP = 0.9;
 export const SPEED = {
   steer: 0.55, // with an arrow key held
   drag: 1.6, // the fastest a finger can pull her

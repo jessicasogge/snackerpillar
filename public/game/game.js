@@ -19,7 +19,7 @@ export function newGame({ halfH, level = 1, from = null, rand = Math.random }) {
   const state = {
     level,
     goal, // how many circles long she has to grow to finish the level
-    head: from ? { ...from.head } : { x: 0, y: 0, dir: -Math.PI / 2 },
+    head: from ? { x: from.head.x, y: from.head.y, dir: from.head.dir } : { x: 0, y: 0, dir: -Math.PI / 2 },
     trail: from ? from.trail.map((p) => ({ ...p })) : [{ x: 0, y: 0 }],
     // { hue, born }, from just behind the head to the tail
     body: from ? from.body.map(({ hue }) => ({ hue, born: -1 })) : [{ hue: startHue(rand), born: -1 }],

@@ -397,3 +397,80 @@ describe('every level has both rocks and mushrooms, evenly', () => {
     }
   });
 });
+
+describe('backing over herself', () => {
+  // A game with nothing on the grass and her `length` circles long, after
+  // being dragged straight up for a second so her body lines up behind her.
+  function laidOut(length) {
+    const state = newGame({ halfH: HALF_H, rand: seeded(5) });
+    state.obstacles = [];
+    state.snacks = [];
+    state.goal = Infinity;
+    state.body = Array.from({ length: length - 1 }, () => ({ hue: 0, born: -1 }));
+    drag(state, 0, -0.012, 60);
+    return state;
+  }
+  // Drag her by (dx, dy) field units a frame, for `frames` frames at 60 a second.
+  function drag(state, dx, dy, frames) {
+    for (let i = 0; i < frames && !state.over; i++) step(state, { ...idle(), drag: { x: dx, y: dy }, dt: 1 / 60 });
+  }
+  function hold(state, key, frames) {
+    for (let i = 0; i < frames && !state.over; i++) step(state, { ...idle(), keys: new Set([key]), dt: 1 / 60 });
+  }
+
+  it.each([2, 3, 4, 5, 8])('ends the game when she is dragged straight back over herself, %i circles long', (length) => {
+    const state = laidOut(length);
+    expect(state.over).toBeNull();
+    drag(state, 0, 0.012, 30);
+    expect(state.over).toBe('tail');
+  });
+
+  it.each([3, 4, 6, 12])("doesn't end it for the tightest U-turn with the arrow keys, %i circles long", (length) => {
+    const state = laidOut(length);
+    hold(state, 'down', 40); // up to down: a full half turn, as tight as she turns
+    hold(state, 'down', 30);
+    expect(state.over).toBeNull();
+  });
+
+  it.each([3, 6])("doesn't end it for sharp right-angle turns while dragging, %i circles long", (length) => {
+    const state = laidOut(length);
+    drag(state, 0.012, 0, 20); // a sharp turn right
+    drag(state, 0, 0.012, 20); // and another, down
+    expect(state.over).toBeNull();
+  });
+
+  it.each([3, 4, 6])("doesn't end it for turning around on the spot against the edge with the arrow keys, %i circles long", (length) => {
+    const state = laidOut(length);
+    hold(state, 'up', 120); // up against the top edge, where she stops
+    expect(state.head.y).toBeCloseTo(-(HALF_H - CELL_R * 1.2));
+    hold(state, 'down', 90); // turn round on the spot and head back down
+    expect(state.over).toBeNull();
+  });
+
+  it('counts a drag straight back as a flip, but not a right-angle turn', () => {
+    const state = laidOut(6);
+    drag(state, 0.012, 0, 1); // a right-angle turn: not a flip
+    expect(state.head.flippedAt).toBeUndefined();
+    drag(state, -0.012, 0, 1); // straight back: a flip
+    expect(state.head.flippedAt).toBeDefined();
+  });
+
+  it("doesn't carry a flip into the next level", () => {
+    const state = laidOut(4);
+    drag(state, 0, 0.004, 1);
+    expect(state.head.flippedAt).toBeDefined();
+    state.over = null;
+    state.won = true;
+    const next = newGame({ halfH: HALF_H, level: 2, from: state, rand: seeded(1) });
+    expect(next.head.flippedAt).toBeUndefined();
+    expect(next.head).toEqual({ x: state.head.x, y: state.head.y, dir: state.head.dir });
+  });
+
+  it("doesn't end it when a finger wobbles back a few pixels", () => {
+    // About 3 pixels on a small phone, where the garden is about 360 pixels wide.
+    const state = laidOut(3);
+    drag(state, 0, 0.0168, 1);
+    drag(state, 0, -0.012, 20);
+    expect(state.over).toBeNull();
+  });
+});

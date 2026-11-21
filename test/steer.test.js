@@ -82,3 +82,24 @@ describe('dragging', () => {
     expect(head.dir).toBe(1);
   });
 });
+
+describe('flips', () => {
+  it('notes where a drag flipped her straight back', () => {
+    const head = { x: 0.2, y: 0.1, dir: 0 };
+    steer(head, { keys: new Set(), drag: { x: -0.02, y: 0 }, dt: 0.1 });
+    expect(head.flippedAt).toEqual({ x: 0.2, y: 0.1 });
+  });
+
+  it("doesn't call a right-angle drag a flip", () => {
+    const head = { x: 0, y: 0, dir: 0 };
+    steer(head, { keys: new Set(), drag: { x: 0, y: 0.02 }, dt: 0.1 });
+    expect(head.flippedAt).toBeUndefined();
+  });
+
+  it('never calls an arrow-key turn a flip, however long the frame', () => {
+    const head = { x: 0, y: 0, dir: 0 };
+    for (let i = 0; i < 20; i++) steer(head, { keys: new Set(['left']), drag: { x: 0, y: 0 }, dt: 0.05 });
+    expect(Math.abs(head.dir)).toBeCloseTo(Math.PI);
+    expect(head.flippedAt).toBeUndefined();
+  });
+});
