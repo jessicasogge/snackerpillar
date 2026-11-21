@@ -12,6 +12,16 @@ const BUMPED = {
   tail: 'Bonk! She ran into her own tail.',
 };
 
+// The garden's shape, as half its height over its width: 1 (square) on a
+// narrow screen, like a phone held upright, and 0.75 (4:3) everywhere else.
+// It uses the same rule as the stylesheet (max-width: 520px) rather than
+// measuring the page, because the game can start before the stylesheet has
+// arrived, when the garden is still a plain 300 by 150 canvas.
+export function gardenShape(win = window) {
+  const narrow = win.matchMedia ? win.matchMedia('(max-width: 520px)').matches : win.innerWidth <= 520;
+  return narrow ? 1 : 0.75;
+}
+
 // Wire the game to the page: input, the animation loop, the level and length
 // counter, and the pop-up at the end of each level.
 // Returns a few handles for tests.
@@ -33,12 +43,13 @@ export function startGame({ doc = document, win = window, celebrate = dotBurst, 
   };
   const renderer = makeRenderer(canvas, { colors, reduceMotion, makeCanvas: () => doc.createElement('canvas') });
   // The garden's shape (its height over its width, halved) is picked once,
-  // from how the page first lays it out: square on a phone held upright,
-  // 4:3 everywhere else. It then stays that shape for the whole game, even
-  // if the phone is turned, so nothing ends up outside the garden; on a
-  // phone turned sideways, the stylesheet fits it to the screen's height.
-  const halfH = renderer.resize(win.devicePixelRatio);
+  // when the game starts: square on a phone held upright, 4:3 everywhere
+  // else. It then stays that shape for the whole game, even if the phone is
+  // turned, so nothing ends up outside the garden; on a phone turned
+  // sideways, the stylesheet fits it to the screen's height.
+  const halfH = gardenShape(win);
   canvas.style.aspectRatio = `2 / ${2 * halfH}`; // the field is 2 wide and 2 * halfH tall
+  renderer.resize(win.devicePixelRatio);
   watchInputMode(doc.documentElement, win);
 
   let state;

@@ -355,6 +355,31 @@ describe('under the garden', () => {
   });
 });
 
+describe("the garden's shape", () => {
+  it('is square on a narrow screen and 4:3 on a wide one', async () => {
+    const { gardenShape } = await import('../public/game/main.js');
+    const screen = (width) => ({ matchMedia: (q) => ({ matches: q === '(max-width: 520px)' && width <= 520 }) });
+    expect(gardenShape(screen(390))).toBe(1);
+    expect(gardenShape(screen(520))).toBe(1);
+    expect(gardenShape(screen(844))).toBe(0.75);
+    expect(gardenShape({ innerWidth: 390 })).toBe(1); // a browser without matchMedia
+    expect(gardenShape({ innerWidth: 1024 })).toBe(0.75);
+  });
+
+  it("isn't thrown off if the game starts before the stylesheet has arrived", () => {
+    // Before the stylesheet, a canvas is the browser's default 300 by 150.
+    Object.defineProperty(HTMLCanvasElement.prototype, 'clientWidth', { configurable: true, get: () => 300 });
+    Object.defineProperty(HTMLCanvasElement.prototype, 'clientHeight', { configurable: true, get: () => 150 });
+    window.matchMedia = (q) => ({ matches: q === '(max-width: 520px)', addEventListener() {} });
+    try {
+      startGame();
+      expect(document.getElementById('field').style.aspectRatio).toBe('2 / 2'); // square, not 2:1
+    } finally {
+      delete window.matchMedia;
+    }
+  });
+});
+
 describe('turning the phone', () => {
   // A stand-in for the browser's ResizeObserver, so a test can say when the
   // garden has been resized.
